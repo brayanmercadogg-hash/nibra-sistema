@@ -1,0 +1,508 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .dash-welcome {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 36px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #e5e5e5;
+    }
+    .dash-welcome-text h2 {
+        margin: 0 0 2px 0;
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #0a0a0a;
+        letter-spacing: -0.02em;
+    }
+    .dash-welcome-text p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #737373;
+        font-weight: 400;
+    }
+    .dash-welcome-icon {
+        font-size: 1.5rem;
+        color: #d4d4d4;
+    }
+    .dash-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+        margin-bottom: 32px;
+    }
+    .dash-stat-card {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e5e5e5;
+        padding: 20px 22px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        transition: border-color 0.15s ease;
+    }
+    .dash-stat-card:hover {
+        border-color: #d4d4d4;
+    }
+    .dash-stat-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+    .dash-stat-body {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        gap: 4px;
+    }
+    .dash-stat-body .label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #a3a3a3;
+        margin: 0;
+    }
+    .dash-stat-body .value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #0a0a0a;
+        margin: 0;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
+    .dash-charts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+    @media (max-width: 900px) {
+        .dash-charts { grid-template-columns: 1fr; }
+    }
+    .dash-chart-card {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e5e5e5;
+        overflow: hidden;
+    }
+    .dash-chart-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 18px 24px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .dash-chart-header i {
+        color: #a3a3a3;
+        font-size: 0.9rem;
+    }
+    .dash-chart-header h3 {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #171717;
+    }
+    .dash-chart-body {
+        padding: 20px 24px 24px;
+        height: 340px;
+        position: relative;
+    }
+    .dash-table-card {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e5e5e5;
+        overflow: hidden;
+    }
+    .dash-table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .dash-table-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .dash-table-header-left i {
+        color: #a3a3a3;
+        font-size: 0.9rem;
+    }
+    .dash-table-header-left h3 {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #171717;
+    }
+    .dash-table-header .btn-ver {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 6px;
+        border: 1px solid #e5e5e5;
+        color: #525252;
+        background: #fff;
+        font-size: 0.78rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .dash-table-header .btn-ver:hover {
+        background: #0a0a0a;
+        color: #fff;
+        border-color: #0a0a0a;
+    }
+    .dash-table-body {
+        padding: 0;
+    }
+    .dash-table-body .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .dash-table-body .table thead th {
+        padding: 11px 24px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #a3a3a3;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fafafa;
+    }
+    .dash-table-body .table tbody td {
+        padding: 13px 24px;
+        font-size: 0.85rem;
+        color: #404040;
+        border-bottom: 1px solid #f5f5f5;
+        vertical-align: middle;
+    }
+    .dash-table-body .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .dash-table-body .table tbody tr {
+        transition: background 0.1s;
+    }
+    .dash-table-body .table tbody tr:hover {
+        background: #fafafa;
+    }
+    .dash-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+    .dash-badge-success {
+        background: #f5f5f5;
+        color: #171717;
+    }
+    .dash-badge-warning {
+        background: #f5f5f5;
+        color: #737373;
+    }
+</style>
+
+<div class="dash-welcome">
+    <div class="dash-welcome-text">
+        <h2>Bienvenido, {{ current_user.username }}</h2>
+        <p id="dash-datetime"></p>
+    </div>
+    <div class="dash-welcome-icon">
+        <i class="fas fa-th-large"></i>
+    </div>
+</div>
+
+<div class="dash-stat-grid">
+    <div class="dash-stat-card" style="border-left: 4px solid #3b82f6">
+        <div class="dash-stat-icon" style="color:#3b82f6">
+            <i class="fas fa-shopping-bag"></i>
+        </div>
+        <div class="dash-stat-body">
+            <p class="label">Ventas del Dia</p>
+            <p class="value">{{ ventas_dia|currency }}</p>
+        </div>
+    </div>
+    <div class="dash-stat-card" style="border-left: 4px solid #10b981">
+        <div class="dash-stat-icon" style="color:#10b981">
+            <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="dash-stat-body">
+            <p class="label">Ventas del Mes</p>
+            <p class="value">{{ ventas_mes|currency }}</p>
+        </div>
+    </div>
+    <div class="dash-stat-card" style="border-left: 4px solid #22c55e">
+        <div class="dash-stat-icon" style="color:#22c55e">
+            <i class="fas fa-arrow-down"></i>
+        </div>
+        <div class="dash-stat-body">
+            <p class="label">Ingresos</p>
+            <p class="value">{{ total_ingresos|currency }}</p>
+        </div>
+    </div>
+    <div class="dash-stat-card" style="border-left: 4px solid #ef4444">
+        <div class="dash-stat-icon" style="color:#ef4444">
+            <i class="fas fa-arrow-up"></i>
+        </div>
+        <div class="dash-stat-body">
+            <p class="label">Gastos</p>
+            <p class="value">{{ total_gastos|currency }}</p>
+        </div>
+    </div>
+    <div class="dash-stat-card" style="border-left: 4px solid #f59e0b">
+        <div class="dash-stat-icon" style="color:#f59e0b">
+            <i class="fas fa-receipt"></i>
+        </div>
+        <div class="dash-stat-body">
+            <p class="label">Costos</p>
+            <p class="value">{{ total_costos|currency }}</p>
+        </div>
+    </div>
+    <div class="dash-stat-card" style="border-left: 4px solid #8b5cf6">
+        <div class="dash-stat-icon" style="color:#8b5cf6">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="dash-stat-body">
+            <p class="label">Ganancia Bruta</p>
+            <p class="value">{{ ganancia_bruta|currency }}</p>
+        </div>
+    </div>
+    <div class="dash-stat-card" style="border-left: 4px solid #ec4899">
+        <div class="dash-stat-icon" style="color:#ec4899">
+            <i class="fas fa-hand-holding-usd"></i>
+        </div>
+        <div class="dash-stat-body">
+            <p class="label">Ganancia Neta</p>
+            <p class="value">{{ ganancia_neta|currency }}</p>
+        </div>
+    </div>
+    <div class="dash-stat-card" style="border-left: 4px solid #14b8a6">
+        <div class="dash-stat-icon" style="color:#14b8a6">
+            <i class="fas fa-piggy-bank"></i>
+        </div>
+        <div class="dash-stat-body">
+            <p class="label">Capital</p>
+            <p class="value">{{ total_capital|currency }}</p>
+        </div>
+    </div>
+    <div class="dash-stat-card" style="border-left: 4px solid #eab308">
+        <div class="dash-stat-icon" style="color:#eab308">
+            <i class="fas fa-file-invoice-dollar"></i>
+        </div>
+        <div class="dash-stat-body">
+            <p class="label">Cuentas por Cobrar</p>
+            <p class="value">{{ cuentas_pendientes|currency }}</p>
+        </div>
+    </div>
+    <div class="dash-stat-card" style="border-left: 4px solid #06b6d4">
+        <div class="dash-stat-icon" style="color:#06b6d4">
+            <i class="fas fa-box"></i>
+        </div>
+        <div class="dash-stat-body">
+            <p class="label">Productos</p>
+            <p class="value">{{ total_productos }}</p>
+        </div>
+    </div>
+    <div class="dash-stat-card" style="border-left: 4px solid #84cc16">
+        <div class="dash-stat-icon" style="color:#84cc16">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="dash-stat-body">
+            <p class="label">Clientes</p>
+            <p class="value">{{ total_clientes }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="dash-charts">
+    <div class="dash-chart-card">
+        <div class="dash-chart-header">
+            <i class="fas fa-chart-bar"></i>
+            <h3>Ventas Mensuales</h3>
+        </div>
+        <div class="dash-chart-body">
+            <canvas id="monthlySalesChart"></canvas>
+        </div>
+    </div>
+    <div class="dash-chart-card">
+        <div class="dash-chart-header">
+            <i class="fas fa-chart-pie"></i>
+            <h3>Top Productos</h3>
+        </div>
+        <div class="dash-chart-body">
+            <canvas id="topProductsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="dash-table-card">
+    <div class="dash-table-header">
+        <div class="dash-table-header-left">
+            <i class="fas fa-receipt"></i>
+            <h3>Ventas Recientes</h3>
+        </div>
+        <a href="{{ url_for('transactions.ventas_list') }}" class="btn-ver">
+            <i class="fas fa-arrow-right" style="font-size:0.72rem"></i> Ver todas
+        </a>
+    </div>
+    <div class="dash-table-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Vendedor</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venta in ventas_recientes %}
+                    <tr>
+                        <td>#{{ venta.id }}</td>
+                        <td>{{ venta.fecha }}</td>
+                        <td>{{ venta.cliente_nombre or 'N/A' }}</td>
+                        <td>{{ venta.vendedor_nombre or 'N/A' }}</td>
+                        <td style="font-weight:700;color:#0a0a0a">{{ venta.total|currency }}</td>
+                        <td>
+                            {% if venta.saldo <= 0 %}
+                                <span class="dash-badge dash-badge-success">PAGADA</span>
+                            {% else %}
+                                <span class="dash-badge dash-badge-warning">PENDIENTE</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not ventas_recientes %}
+                    <tr>
+                        <td colspan="6" style="text-align:center;color:#a3a3a3;padding:32px 0">No hay ventas registradas</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const dayNames = ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'];
+    (function() {
+        const now = new Date();
+        const el = document.getElementById('dash-datetime');
+        if (el) {
+            el.textContent = dayNames[now.getDay()] + ', ' + now.getDate() + ' de ' + monthNames[now.getMonth()] + ' ' + now.getFullYear() + ' — ' + now.toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'});
+        }
+    })();
+
+    const monthlyLabels = [{% for s in monthly_sales %}'{{ s.month }}'{% if not loop.last %},{% endif %}{% endfor %}];
+    const monthlyData = [{% for s in monthly_sales %}{{ s.total }}{% if not loop.last %},{% endif %}{% endfor %}];
+
+    new Chart(document.getElementById('monthlySalesChart'), {
+        type: 'bar',
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: 'Ventas',
+                data: monthlyData,
+                backgroundColor: 'rgba(91, 77, 199, 0.7)',
+                borderColor: 'rgba(91, 77, 199, 1)',
+                borderWidth: 1,
+                borderRadius: 6,
+                hoverBackgroundColor: 'rgba(91, 77, 199, 0.9)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleColor: '#fff',
+                    bodyColor: '#cbd5e1',
+                    cornerRadius: 8,
+                    padding: 12,
+                    callbacks: {
+                        label: function(ctx) {
+                            return '$' + ctx.parsed.y.toLocaleString('es', {minimumFractionDigits: 2});
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(v) { return '$' + v.toLocaleString(); },
+                        color: '#94a3b8',
+                        font: { size: 11, weight: '500' }
+                    },
+                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    border: { display: false }
+                },
+                x: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: { color: '#94a3b8', font: { size: 11, weight: '500' } }
+                }
+            }
+        }
+    });
+
+    const productLabels = [{% for p in top_products %}'{{ p.nombre_producto }}'{% if not loop.last %},{% endif %}{% endfor %}];
+    const productData = [{% for p in top_products %}{{ p.cantidad_vendida }}{% if not loop.last %},{% endif %}{% endfor %}];
+    const productColors = ['#5b4dc7','#10b981','#f59e0b','#ef4444','#3b82f6','#ec4899','#14b8a6'];
+
+    new Chart(document.getElementById('topProductsChart'), {
+        type: 'doughnut',
+        data: {
+            labels: productLabels,
+            datasets: [{
+                data: productData,
+                backgroundColor: productColors.slice(0, productLabels.length),
+                borderWidth: 3,
+                borderColor: '#fff',
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10, font: { size: 12, weight: '500' } }
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleColor: '#fff',
+                    bodyColor: '#cbd5e1',
+                    cornerRadius: 8,
+                    padding: 12
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

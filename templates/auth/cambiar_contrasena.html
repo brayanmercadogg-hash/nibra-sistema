@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIBRA - Cambiar Contraseña</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .change-container {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .change-card {
+            background: #ffffff;
+            border: 1px solid #e4e4e7;
+            border-radius: 12px;
+            padding: 48px 36px 36px;
+            text-align: center;
+        }
+
+        .change-header {
+            margin-bottom: 24px;
+        }
+
+        .change-icon {
+            font-size: 32px;
+            color: #09090b;
+            margin-bottom: 16px;
+        }
+
+        .change-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #09090b;
+            letter-spacing: -0.3px;
+            margin-bottom: 6px;
+        }
+
+        .change-subtitle {
+            font-size: 13px;
+            font-weight: 400;
+            color: #a1a1aa;
+            margin-bottom: 0;
+        }
+
+        .alert-warning {
+            background: #fafafa;
+            border: 1px solid #e4e4e7;
+            color: #52525b;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            font-weight: 400;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .alert-warning i {
+            margin-top: 2px;
+            flex-shrink: 0;
+            font-size: 14px;
+            color: #71717a;
+        }
+
+        .flash-area {
+            margin-bottom: 4px;
+        }
+
+        .alert {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #f4f4f5;
+            color: #18181b;
+            border: 1px solid #e4e4e7;
+        }
+
+        .alert-error,
+        .alert-danger {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.4;
+            padding: 0 2px;
+            transition: opacity 0.2s;
+            flex-shrink: 0;
+        }
+
+        .alert-close:hover {
+            opacity: 1;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #18181b;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d4d4d8;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            color: #09090b;
+            background: #ffffff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #09090b;
+            box-shadow: 0 0 0 1px #09090b;
+        }
+
+        .form-group input::placeholder {
+            color: #a1a1aa;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 10px 20px;
+            background: #09090b;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn-submit:hover {
+            background: #18181b;
+        }
+
+        .btn-submit:active {
+            background: #27272a;
+        }
+
+        .password-requirements {
+            margin-top: 24px;
+            padding: 16px;
+            background: #fafafa;
+            border: 1px solid #e4e4e7;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .password-requirements h4 {
+            color: #71717a;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 0 10px 0;
+        }
+
+        .password-requirements ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 6px;
+        }
+
+        .password-requirements li {
+            color: #52525b;
+            font-size: 12px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .password-requirements li i {
+            font-size: 10px;
+            color: #a1a1aa;
+            width: 12px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 480px) {
+            .change-card {
+                padding: 36px 24px 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="change-container">
+        <div class="change-card">
+            <div class="change-header">
+                <div class="change-icon">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <h1 class="change-title">Cambiar Contraseña</h1>
+                <p class="change-subtitle">Es necesario actualizar su contraseña para continuar</p>
+            </div>
+
+            <div class="alert-warning">
+                <i class="fas fa-circle-exclamation"></i>
+                <span>Debe cambiar su contraseña por defecto antes de continuar. No podrá acceder al sistema hasta completar este paso.</span>
+            </div>
+
+            <div class="flash-area">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                <span>{{ message }}</span>
+                                <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.change_password') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label>Contraseña actual</label>
+                    <input type="password" name="actual" required placeholder="Ingrese su contraseña actual">
+                </div>
+
+                <div class="form-group">
+                    <label>Nueva contraseña</label>
+                    <input type="password" name="nueva" required placeholder="Mínimo 8 caracteres">
+                </div>
+
+                <div class="form-group">
+                    <label>Confirmar nueva contraseña</label>
+                    <input type="password" name="confirmar" required placeholder="Repita la contraseña">
+                </div>
+
+                <button type="submit" class="btn-submit">Actualizar contraseña</button>
+            </form>
+
+            <div class="password-requirements">
+                <h4>Requisitos de contraseña</h4>
+                <ul>
+                    <li><i class="fas fa-circle"></i> Mínimo 8 caracteres</li>
+                    <li><i class="fas fa-circle"></i> Al menos 1 letra mayúscula</li>
+                    <li><i class="fas fa-circle"></i> Al menos 1 letra minúscula</li>
+                    <li><i class="fas fa-circle"></i> Al menos 1 número</li>
+                    <li><i class="fas fa-circle"></i> Al menos 1 carácter especial (!@#$%^&*...)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

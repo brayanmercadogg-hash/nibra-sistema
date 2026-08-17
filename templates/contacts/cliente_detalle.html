@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Detalle Cliente{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-user"></i> Detalle del Cliente</h1>
+    <a href="{{ url_for('contacts.clientes') }}" class="btn btn-secondary">Volver</a>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header"><h3><i class="fas fa-id-card"></i> Informacion del Cliente</h3></div>
+        <div class="card-body">
+            <p><strong>Codigo:</strong> {{ cliente.codigo }}</p>
+            <p><strong>Nombre:</strong> {{ cliente.nombre }}</p>
+            <p><strong>Email:</strong> {{ cliente.email or '-' }}</p>
+            <p><strong>Telefono:</strong> {{ cliente.telefono or '-' }}</p>
+            <p><strong>Direccion:</strong> {{ cliente.direccion or '-' }}</p>
+            <p><strong>Documento:</strong> {{ cliente.documento or '-' }}</p>
+            <p><strong>Estado:</strong> <span class="badge badge-{{ 'success' if cliente.estado == 'ACTIVO' else 'danger' }}">{{ cliente.estado }}</span></p>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3><i class="fas fa-shopping-cart"></i> Historial de Ventas</h3></div>
+        <div class="card-body">
+            {% if ventas %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr><th>ID</th><th>Fecha</th><th>Total</th><th>Pagado</th><th>Saldo</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for v in ventas %}
+                        <tr>
+                            <td><a href="{{ url_for('transactions.venta_detalle', id=v.id) }}">#{{ v.id }}</a></td>
+                            <td>{{ v.fecha }}</td>
+                            <td>{{ v.total|currency }}</td>
+                            <td>{{ v.pagado|currency }}</td>
+                            <td>{{ v.saldo|currency }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No hay ventas registradas para este cliente.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

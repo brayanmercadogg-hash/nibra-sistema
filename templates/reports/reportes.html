@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Reportes{% endblock %}
+{% block page_title %}Reportes{% endblock %}
+{% block content %}
+<div class="content-header">
+    <h2>Generar Reporte</h2>
+</div>
+
+<div class="card">
+    <form method="GET" action="{{ url_for('reports.generar') }}" class="form-grid" id="reportForm">
+        <div class="form-group">
+            <label for="tipo">Tipo de Reporte</label>
+            <select id="tipo" name="tipo" class="form-control" required>
+                <option value="">-- Seleccione un reporte --</option>
+                <option value="ventas">Ventas</option>
+                <option value="compras">Compras</option>
+                <option value="ingresos">Ingresos</option>
+                <option value="gastos">Gastos</option>
+                <option value="ganancias">Ganancias</option>
+                <option value="cuentas_cobrar">Cuentas por Cobrar</option>
+                <option value="capital">Capital</option>
+                <option value="socios">Socios</option>
+                <option value="inversiones">Inversiones</option>
+                <option value="comisiones">Comisiones</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="fecha_inicio">Fecha Inicio</label>
+            <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="fecha_fin">Fecha Fin</label>
+            <input type="date" id="fecha_fin" name="fecha_fin" class="form-control" required>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Generar Reporte</button>
+        </div>
+    </form>
+</div>
+
+<div class="content-header">
+    <h2>Tipos de Reporte</h2>
+</div>
+
+<div class="report-cards">
+    <div class="report-card" onclick="document.getElementById('tipo').value='ventas';document.getElementById('reportForm').scrollIntoView({behavior:'smooth'})">
+        <div class="report-card-icon">&#128200;</div>
+        <h3>Ventas</h3>
+        <p>Análisis completo de todas las ventas realizadas en un periodo</p>
+    </div>
+    <div class="report-card" onclick="document.getElementById('tipo').value='compras';document.getElementById('reportForm').scrollIntoView({behavior:'smooth'})">
+        <div class="report-card-icon">&#128722;</div>
+        <h3>Compras</h3>
+        <p>Registro de compras a proveedores por periodo</p>
+    </div>
+    <div class="report-card" onclick="document.getElementById('tipo').value='ingresos';document.getElementById('reportForm').scrollIntoView({behavior:'smooth'})">
+        <div class="report-card-icon">&#128176;</div>
+        <h3>Ingresos</h3>
+        <p>Detalle de todos los ingresos económicos</p>
+    </div>
+    <div class="report-card" onclick="document.getElementById('tipo').value='gastos';document.getElementById('reportForm').scrollIntoView({behavior:'smooth'})">
+        <div class="report-card-icon">&#128181;</div>
+        <h3>Gastos</h3>
+        <p>Control de gastos operativos y administrativos</p>
+    </div>
+    <div class="report-card" onclick="document.getElementById('tipo').value='ganancias';document.getElementById('reportForm').scrollIntoView({behavior:'smooth'})">
+        <div class="report-card-icon">&#128202;</div>
+        <h3>Ganancias</h3>
+        <p>Margen de ganancia por producto vendido</p>
+    </div>
+    <div class="report-card" onclick="document.getElementById('tipo').value='cuentas_cobrar';document.getElementById('reportForm').scrollIntoView({behavior:'smooth'})">
+        <div class="report-card-icon">&#128196;</div>
+        <h3>Cuentas por Cobrar</h3>
+        <p>Saldo pendiente de clientes</p>
+    </div>
+    <div class="report-card" onclick="document.getElementById('tipo').value='capital';document.getElementById('reportForm').scrollIntoView({behavior:'smooth'})">
+        <div class="report-card-icon">&#127970;</div>
+        <h3>Capital</h3>
+        <p>Movimientos de capital de la empresa</p>
+    </div>
+    <div class="report-card" onclick="document.getElementById('tipo').value='socios';document.getElementById('reportForm').scrollIntoView({behavior:'smooth'})">
+        <div class="report-card-icon">&#128101;</div>
+        <h3>Socios</h3>
+        <p>Información y participación de socios</p>
+    </div>
+    <div class="report-card" onclick="document.getElementById('tipo').value='inversiones';document.getElementById('reportForm').scrollIntoView({behavior:'smooth'})">
+        <div class="report-card-icon">&#128640;</div>
+        <h3>Inversiones</h3>
+        <p>Estado de inversiones realizadas</p>
+    </div>
+    <div class="report-card" onclick="document.getElementById('tipo').value='comisiones';document.getElementById('reportForm').scrollIntoView({behavior:'smooth'})">
+        <div class="report-card-icon">&#128100;</div>
+        <h3>Comisiones</h3>
+        <p>Comisiones generadas por vendedores</p>
+    </div>
+</div>
+
+<style>
+.report-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+.report-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.report-card:hover {
+    border-color: #000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+.report-card-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+}
+.report-card h3 {
+    margin: 0 0 0.4rem 0;
+    color: var(--text-color, #1e293b);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+.report-card p {
+    margin: 0;
+    color: var(--text-muted, #64748b);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+</style>
+{% endblock %}

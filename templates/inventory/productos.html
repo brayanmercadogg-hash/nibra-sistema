@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}Productos{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-box" style="color:var(--text-muted);margin-right:8px;font-size:20px"></i>Productos</h1>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3><i class="fas fa-{{ 'pen-to-square' if producto else 'plus' }}"></i> {% if producto %}Editar Producto{% else %}Nuevo Producto{% endif %}</h3>
+    </div>
+    <div class="card-body">
+        {% if producto %}
+        <form method="POST" action="{{ url_for('inventory.actualizar_producto', id=producto.id) }}" enctype="multipart/form-data">
+            <input type="hidden" name="imagen_actual" value="{{ producto.imagen or '' }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% else %}
+        <form method="POST" action="{{ url_for('inventory.crear_producto') }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% endif %}
+            {% if producto %}
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>Código</label>
+                    <input type="text" class="form-control" value="{{ producto.codigo }}" readonly style="background:#fafafa;color:var(--text-muted)">
+                </div>
+            {% endif %}
+                <div class="form-group">
+                    <label for="nombre">Nombre *</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" required
+                           value="{{ producto.nombre if producto else '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="marca">Marca</label>
+                    <input type="text" id="marca" name="marca" class="form-control"
+                           value="{{ producto.marca if producto else '' }}">
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" class="form-control" rows="2">{{ producto.descripcion if producto else '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="categoria_id">Categoría</label>
+                    <select id="categoria_id" name="categoria_id" class="form-control">
+                        <option value="">Sin categoría</option>
+                        {% for cat in categorias %}
+                        <option value="{{ cat.id }}" {% if producto and producto.categoria_id == cat.id %}selected{% endif %}>
+                            {{ cat.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="precio_compra">Precio Compra (COP)</label>
+                    <input type="number" step="0.01" min="0" id="precio_compra" name="precio_compra" class="form-control"
+                           value="{{ producto.precio_compra if producto else '0' }}">
+                </div>
+                <div class="form-group">
+                    <label for="precio_venta">Precio Venta (COP)</label>
+                    <input type="number" step="0.01" min="0" id="precio_venta" name="precio_venta" class="form-control"
+                           value="{{ producto.precio_venta if producto else '0' }}">
+                </div>
+                <div class="form-group">
+                    <label for="imagen">Imagen</label>
+                    <input type="file" id="imagen" name="imagen" class="form-control" accept="image/*">
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="estado">Estado</label>
+                    <select id="estado" name="estado" class="form-control">
+                        <option value="ACTIVO" {% if not producto or producto.estado == 'ACTIVO' %}selected{% endif %}>Activo</option>
+                        <option value="INACTIVO" {% if producto and producto.estado == 'INACTIVO' %}selected{% endif %}>Inactivo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    {% if producto and producto.imagen %}
+                    <label>Imagen actual</label><br>
+                    <img src="{{ url_for('static', filename='img/uploads/' + producto.imagen) }}" alt="imagen" style="max-height:72px;border-radius:var(--radius-sm);border:1px solid var(--border)">
+                    {% endif %}
+                </div>
+            </div>
+            {% if not producto %}
+            <p class="form-text mb-2"><i class="fas fa-info-circle" style="opacity:.4"></i> El código del producto se generará automáticamente.</p>
+            {% endif %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-{{ 'check' if producto else 'plus' }}"></i>
+                    {% if producto %}Actualizar{% else %}Crear{% endif %}
+                </button>
+                {% if producto %}
+                <a href="{{ url_for('inventory.productos') }}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancelar</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-list"></i> Lista de Productos</h3>
+    </div>
+    <div class="card-body">
+        {% if productos %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Marca</th>
+                        <th>P. Compra</th>
+                        <th>P. Venta</th>
+                        <th>Margen</th>
+                        <th>Imagen</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in productos %}
+                    <tr>
+                        <td><code style="font-size:12px;background:var(--border-light);padding:2px 6px;border-radius:var(--radius-xs)">{{ p.codigo }}</code></td>
+                        <td style="font-weight:500">{{ p.nombre }}</td>
+                        <td>{{ p.categoria_nombre or '-' }}</td>
+                        <td>{{ p.marca or '-' }}</td>
+                        <td>{{ p.precio_compra|currency }}</td>
+                        <td style="font-weight:500">{{ p.precio_venta|currency }}</td>
+                        <td>{{ "%.1f"|format(p.margen) }}%</td>
+                        <td>
+                            {% if p.imagen %}
+                            <img src="{{ url_for('static', filename='img/uploads/' + p.imagen) }}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:var(--radius-xs);border:1px solid var(--border)">
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if p.estado == 'ACTIVO' else 'danger' }}">{{ p.estado }}</span>
+                        </td>
+                        <td class="actions-cell">
+                            <a href="{{ url_for('inventory.editar_producto', id=p.id) }}" class="btn btn-sm btn-primary"><i class="fas fa-pen"></i></a>
+                            <form method="POST" action="{{ url_for('inventory.eliminar_producto', id=p.id) }}" style="display:inline" onsubmit="return confirm('¿Está seguro de eliminar este producto?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-box"></i>
+            <p>No hay productos registrados</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

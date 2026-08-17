@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Compras{% endblock %}
+{% block page_title %}Compras{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Compras</h1>
+    <a href="{{ url_for('transactions.compra_nueva') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nueva Compra
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Lista de Compras</h3>
+        <span class="badge badge-primary">{{ compras|length }} registro(s)</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Fecha</th>
+                        <th>Proveedor</th>
+                        <th>Total</th>
+                        <th>Pagado</th>
+                        <th>Saldo</th>
+                        <th>Método Pago</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if compras %}
+                        {% for c in compras %}
+                        <tr>
+                            <td><span class="fw-bold">{{ c.codigo }}</span></td>
+                            <td>{{ c.fecha }}</td>
+                            <td>{{ c.proveedor_nombre or 'Sin proveedor' }}</td>
+                            <td class="fw-bold">{{ c.total|currency }}</td>
+                            <td class="text-success">{{ c.pagado|currency }}</td>
+                            <td class="{% if c.saldo > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+                                {{ c.saldo|currency }}
+                            </td>
+                            <td>
+                                <span class="badge
+                                    {% if c.metodo_pago == 'EFECTIVO' %}badge-success
+                                    {% elif c.metodo_pago == 'TARJETA' %}badge-primary
+                                    {% elif c.metodo_pago == 'TRANSFERENCIA' %}badge-info
+                                    {% else %}badge-secondary{% endif %}">
+                                    {{ c.metodo_pago }}
+                                </span>
+                            </td>
+                            <td class="actions-cell">
+                                <a href="{{ url_for('transactions.compra_detalle', id=c.id) }}"
+                                   class="btn btn-sm btn-info" title="Ver Detalle">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('transactions.compra_editar_form', id=c.id) }}"
+                                   class="btn btn-sm btn-warning" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>No hay compras registradas.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

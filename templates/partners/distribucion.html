@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Distribución de Ganancias{% endblock %}
+{% block page_title %}Distribución de Ganancias{% endblock %}
+{% block content %}
+<div class="content-header">
+    <h2>Calcular Distribución</h2>
+</div>
+
+<div class="card">
+    <form method="POST" action="{{ url_for('partners.calcular_distribucion') }}" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label for="periodo_inicio">Periodo Inicio</label>
+            <input type="date" id="periodo_inicio" name="periodo_inicio" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="periodo_fin">Periodo Fin</label>
+            <input type="date" id="periodo_fin" name="periodo_fin" class="form-control" required>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Calcular Distribución</button>
+        </div>
+    </form>
+</div>
+
+<div class="content-header">
+    <h2>Distribuciones Registradas</h2>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Periodo</th>
+                    <th>Utilidad Neta</th>
+                    <th>Estado</th>
+                    <th>Fecha Distribución</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in distribuciones %}
+                <tr>
+                    <td>{{ d.id }}</td>
+                    <td>{{ d.periodo_inicio }} al {{ d.periodo_fin }}</td>
+                    <td>${{ '%.2f' % d.utilidad_neta | float }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if d.estado == 'PAGADA' else 'warning' }}">
+                            {{ d.estado }}
+                        </span>
+                    </td>
+                    <td>{{ d.fecha_distribucion or '-' }}</td>
+                    <td class="actions">
+                        {% if d.estado == 'PENDIENTE' %}
+                        <form method="POST" action="{{ url_for('partners.registrar_pago', distribucion_id=d.id) }}"
+                              style="display:inline" onsubmit="return confirm('¿Registrar pago de esta distribución?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-success">Registrar Pago</button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted">Pagado</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No hay distribuciones registradas</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

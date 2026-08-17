@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% block title %}{% if compra %}Editar Compra #{{ compra.id }}{% else %}Nueva Compra{% endif %}{% endblock %}
+{% block page_title %}{% if compra %}Editar Compra #{{ compra.id }}{% else %}Nueva Compra{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>{% if compra %}Editar Compra #{{ compra.id }}{% else %}Nueva Compra{% endif %}</h1>
+    <a href="{{ url_for('transactions.compras_list') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+    </a>
+</div>
+
+<form id="compraForm">
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3>Información de la Compra</h3>
+        </div>
+        <div class="card-body">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="proveedor_id">Proveedor <span class="text-danger">*</span></label>
+                    <select class="form-select" id="proveedor_id" name="proveedor_id" required>
+                        <option value="">Seleccionar proveedor...</option>
+                        {% for p in proveedores %}
+                            <option value="{{ p.id }}" {% if compra and compra.proveedor_id == p.id %}selected{% endif %}>
+                                {{ p.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="metodo_pago">Método de Pago <span class="text-danger">*</span></label>
+                    <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                        <option value="">Seleccionar método...</option>
+                        {% set metodos = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'OTRO'] %}
+                        {% for m in metodos %}
+                            <option value="{{ m }}" {% if compra and compra.metodo_pago == m %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="pagado">Pagado <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="pagado" name="pagado"
+                               step="0.01" min="0" value="{{ compra.pagado if compra else '0' }}" required>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="observaciones">Observaciones</label>
+                <textarea class="form-control" id="observaciones" name="observaciones"
+                          rows="2">{{ compra.observaciones if compra else '' }}</textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3>Productos</h3>
+            <button type="button" class="btn btn-sm btn-primary" onclick="addRow()">
+                <i class="fas fa-plus"></i> Agregar Producto
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th style="width:35%">Producto</th>
+                            <th style="width:15%">Cantidad</th>
+                            <th style="width:20%">Precio Unitario</th>
+                            <th style="width:20%">Subtotal</th>
+                            <th style="width:10%" class="text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold" style="background:var(--warning-bg)">Total:</td>
+                            <td id="totalDisplay" class="fw-bold" style="background:var(--warning-bg);font-size:16px">$0.00</td>
+                            <td style="background:var(--warning-bg)"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div id="noItemsMsg" class="empty-state" style="padding:24px">
+                <i class="fas fa-info-circle"></i>
+                <p>Haga clic en "Agregar Producto" para comenzar.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mb-3">
+        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+            <i class="fas fa-save"></i> {% if compra %}Actualizar Compra{% else %}Guardar Compra{% endif %}
+        </button>
+        <a href="{{ url_for('transactions.compras_list') }}" class="btn btn-secondary btn-lg">
+            <i class="fas fa-times"></i> Cancelar
+        </a>
+    </div>
+</form>
+
+<script>
+const productos = [
+  {% for p in productos %}
+    { id: {{ p.id }}, nombre: "{{ p.nombre | e }}", precio_venta: {{ p.precio_venta or 0 }}, precio_compra: {{ p.precio_compra or 0 }} }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+{% if compra and detalles %}
+const detallesExistentes = [
+  {% for d in detalles %}
+    { producto_id: {{ d.producto_id if d.producto_id else 'null' }}, nombre_producto: "{{ d.nombre_producto | e }}", cantidad: {{ d.cantidad }}, precio_unitario: {{ d.precio_unitario }} }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+{% else %}
+const detallesExistentes = [];
+{% endif %}
+let rowIndex = 0;
+function formatCurrency(val) { return '$' + parseFloat(val).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+function addRow(productoId, cantidad, precioUnitario) {
+  const tbody = document.getElementById('itemsBody');
+  const tr = document.createElement('tr');
+  tr.id = 'row-' + rowIndex;
+  let optionsHtml = '<option value="">Seleccionar producto...</option>';
+  productos.forEach(p => {
+    const selected = (productoId && p.id == productoId) ? 'selected' : '';
+    optionsHtml += '<option value="' + p.id + '" data-precio-venta="' + p.precio_venta + '" data-precio-compra="' + p.precio_compra + '" ' + selected + '>' + p.nombre + '</option>';
+  });
+  tr.innerHTML = '<td><select class="form-select producto-select" onchange="onProductoChange(this, ' + rowIndex + ')" required>' + optionsHtml + '</select></td>' +
+    '<td><input type="number" class="form-control cantidad-input" min="0.01" step="0.01" value="' + (cantidad || 1) + '" oninput="calcularSubtotal(' + rowIndex + ')" required></td>' +
+    '<td><div class="input-group"><span class="input-group-text">$</span><input type="number" class="form-control precio-input" step="0.01" min="0" value="' + (precioUnitario || 0) + '" oninput="calcularSubtotal(' + rowIndex + ')" required></div></td>' +
+    '<td class="subtotal-cell fw-bold">' + formatCurrency((cantidad || 1) * (precioUnitario || 0)) + '</td>' +
+    '<td class="text-center"><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)" title="Eliminar"><i class="fas fa-trash"></i></button></td>';
+  tbody.appendChild(tr);
+  rowIndex++;
+  updateVisibility();
+  calcularTotal();
+}
+function removeRow(btn) { btn.closest('tr').remove(); updateVisibility(); calcularTotal(); }
+function onProductoChange(select, idx) {
+  const option = select.options[select.selectedIndex];
+  const precioCompra = option.getAttribute('data-precio-compra');
+  if (precioCompra && parseFloat(precioCompra) > 0) { select.closest('tr').querySelector('.precio-input').value = precioCompra; }
+  calcularSubtotal(idx);
+}
+function calcularSubtotal(idx) {
+  const row = document.getElementById('row-' + idx);
+  if (!row) return;
+  const cantidad = parseFloat(row.querySelector('.cantidad-input').value) || 0;
+  const precio = parseFloat(row.querySelector('.precio-input').value) || 0;
+  row.querySelector('.subtotal-cell').textContent = formatCurrency(cantidad * precio);
+  calcularTotal();
+}
+function calcularTotal() {
+  let total = 0;
+  document.querySelectorAll('#itemsBody tr').forEach(row => {
+    total += (parseFloat(row.querySelector('.cantidad-input').value) || 0) * (parseFloat(row.querySelector('.precio-input').value) || 0);
+  });
+  document.getElementById('totalDisplay').textContent = formatCurrency(total);
+}
+function updateVisibility() {
+  document.getElementById('noItemsMsg').style.display = document.querySelectorAll('#itemsBody tr').length === 0 ? 'block' : 'none';
+}
+document.getElementById('compraForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const items = [];
+  document.querySelectorAll('#itemsBody tr').forEach(row => {
+    const select = row.querySelector('.producto-select');
+    const productoId = select.value;
+    const option = select.options[select.selectedIndex];
+    const nombreProducto = option ? option.text : '';
+    const cantidad = parseFloat(row.querySelector('.cantidad-input').value) || 0;
+    const precioUnitario = parseFloat(row.querySelector('.precio-input').value) || 0;
+    if (productoId && cantidad > 0 && precioUnitario > 0) {
+      items.push({ producto_id: parseInt(productoId), nombre_producto: nombreProducto, cantidad: cantidad, precio_unitario: precioUnitario });
+    }
+  });
+  if (items.length === 0) { alert('Debe agregar al menos un producto.'); return; }
+  const payload = {
+    proveedor_id: parseInt(document.getElementById('proveedor_id').value),
+    metodo_pago: document.getElementById('metodo_pago').value,
+    pagado: parseFloat(document.getElementById('pagado').value) || 0,
+    observaciones: document.getElementById('observaciones').value,
+    items: items
+  };
+  {% if compra %}const url = '{{ url_for("transactions.compra_editar", id=compra.id) }}';{% else %}const url = '{{ url_for("transactions.compra_crear") }}';{% endif %}
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+  fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) { window.location.href = '{{ url_for("transactions.compras_list") }}'; }
+      else { alert('Error al guardar: ' + (data.error || 'Error desconocido')); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-save"></i> {% if compra %}Actualizar{% else %}Guardar{% endif %} Compra'; }
+    })
+    .catch(err => { alert('Error de conexión: ' + err.message); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-save"></i> {% if compra %}Actualizar{% else %}Guardar{% endif %} Compra'; });
+});
+document.addEventListener('DOMContentLoaded', function() {
+  if (detallesExistentes.length > 0) { detallesExistentes.forEach(d => { addRow(d.producto_id, d.cantidad, d.precio_unitario); }); }
+  updateVisibility();
+});
+</script>
+{% endblock %}

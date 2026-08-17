@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Cuentas por Cobrar{% endblock %}
+{% block page_title %}Cuentas por Cobrar{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Cuentas por Cobrar</h1>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <span class="text-muted text-bold" style="font-size:13px">Filtrar:</span>
+            <a href="{{ url_for('transactions.cuentas_cobrar_list') }}"
+               class="btn btn-sm {% if not filtro_estado %}btn-primary{% else %}btn-outline{% endif %}">Todas</a>
+            <a href="{{ url_for('transactions.cuentas_cobrar_list', estado='PENDIENTE') }}"
+               class="btn btn-sm {% if filtro_estado == 'PENDIENTE' %}btn-warning{% else %}btn-outline{% endif %}">Pendientes</a>
+            <a href="{{ url_for('transactions.cuentas_cobrar_list', estado='PAGADA') }}"
+               class="btn btn-sm {% if filtro_estado == 'PAGADA' %}btn-success{% else %}btn-outline{% endif %}">Pagadas</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Lista de Cuentas</h3>
+        <span class="badge badge-primary">{{ cuentas|length }} registro(s)</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Venta ID</th>
+                        <th>Total</th>
+                        <th>Pagado</th>
+                        <th>Saldo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if cuentas %}
+                        {% for cc in cuentas %}
+                        <tr>
+                            <td><span class="fw-bold">#{{ cc.id }}</span></td>
+                            <td>{{ cc.cliente_nombre or 'Sin cliente' }}</td>
+                            <td>
+                                {% if cc.venta_id %}
+                                    <a href="{{ url_for('transactions.venta_detalle', id=cc.venta_id) }}">#{{ cc.venta_id }}</a>
+                                {% else %}-{% endif %}
+                            </td>
+                            <td class="fw-bold">{{ cc.total|currency }}</td>
+                            <td class="text-success">{{ cc.pagado|currency }}</td>
+                            <td class="{% if cc.saldo > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+                                {{ cc.saldo|currency }}
+                            </td>
+                            <td>
+                                {% set estado = cc.estado if cc.estado else ('PAGADA' if cc.saldo <= 0 else 'PENDIENTE') %}
+                                <span class="badge {% if estado == 'PAGADA' %}badge-success{% else %}badge-warning{% endif %}">
+                                    {{ estado }}
+                                </span>
+                            </td>
+                            <td class="actions-cell">
+                                <a href="{{ url_for('transactions.cuenta_detalle', id=cc.id) }}"
+                                   class="btn btn-sm btn-info" title="Ver Detalle">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>No hay cuentas por cobrar registradas.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

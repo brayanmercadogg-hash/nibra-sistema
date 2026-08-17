@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% block title %}Cuenta por Cobrar #{{ cuenta.id }}{% endblock %}
+{% block page_title %}Cuenta por Cobrar #{{ cuenta.id }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Cuenta #{{ cuenta.id }}</h1>
+    <a href="{{ url_for('transactions.cuentas_cobrar_list') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+    </a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3>Información de la Cuenta</h3>
+    </div>
+    <div class="card-body">
+        <div class="grid-3 mb-3">
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Cliente</div>
+                <div class="fw-bold" style="font-size:16px;margin-top:4px">{{ cuenta.cliente_nombre or 'Sin cliente' }}</div>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Venta ID</div>
+                <div class="fw-bold" style="font-size:16px;margin-top:4px">
+                    {% if cuenta.venta_id %}<a href="{{ url_for('transactions.venta_detalle', id=cuenta.venta_id) }}">#{{ cuenta.venta_id }}</a>{% else %}-{% endif %}
+                </div>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Estado</div>
+                <div style="margin-top:4px">
+                    {% set estado = cuenta.estado if cuenta.estado else ('PAGADA' if cuenta.saldo <= 0 else 'PENDIENTE') %}
+                    <span class="badge {% if estado == 'PAGADA' %}badge-success{% else %}badge-warning{% endif %}">{{ estado }}</span>
+                </div>
+            </div>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+        <div class="grid-3">
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Total</div>
+                <div class="fw-bold" style="font-size:20px;margin-top:4px">{{ cuenta.total|currency }}</div>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Pagado</div>
+                <div class="fw-bold text-success" style="font-size:20px;margin-top:4px">{{ cuenta.pagado|currency }}</div>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Saldo Pendiente</div>
+                <div class="fw-bold {% if cuenta.saldo > 0 %}text-danger{% else %}text-success{% endif %}" style="font-size:20px;margin-top:4px">
+                    {{ cuenta.saldo|currency }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3>Historial de Abonos</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Monto</th>
+                        <th>Método Pago</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if abonos %}
+                        {% for a in abonos %}
+                        <tr>
+                            <td><span class="fw-bold">#{{ a.id }}</span></td>
+                            <td>{{ a.fecha }}</td>
+                            <td class="fw-bold text-success">{{ a.monto|currency }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if a.metodo_pago == 'EFECTIVO' %}badge-success
+                                    {% elif a.metodo_pago == 'TARJETA' %}badge-primary
+                                    {% elif a.metodo_pago == 'TRANSFERENCIA' %}badge-info
+                                    {% else %}badge-secondary{% endif %}">
+                                    {{ a.metodo_pago }}
+                                </span>
+                            </td>
+                            <td>{{ a.observaciones or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><p>No hay abonos registrados.</p></td></tr>
+                    {% endif %}
+                </tbody>
+                {% if abonos %}
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="text-end fw-bold" style="background:var(--success-bg)">Total Abonado:</td>
+                        <td colspan="3" class="fw-bold" style="background:var(--success-bg)">{{ cuenta.pagado|currency }}</td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+
+{% set estado = cuenta.estado if cuenta.estado else ('PAGADA' if cuenta.saldo <= 0 else 'PENDIENTE') %}
+{% if estado != 'PAGADA' %}
+<div class="card mb-3">
+    <div class="card-header">
+        <h3>Registrar Abono</h3>
+    </div>
+    <div class="card-body">
+        <form id="abonoForm">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="monto">Monto <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="monto" name="monto" step="0.01" min="0.01" max="{{ cuenta.saldo }}" required placeholder="0.00">
+                    </div>
+                    <div class="form-text">Saldo pendiente: {{ cuenta.saldo|currency }}</div>
+                </div>
+                <div class="form-group">
+                    <label for="fecha">Fecha <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="fecha" name="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label for="metodo_pago">Método de Pago <span class="text-danger">*</span></label>
+                    <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                        <option value="">Seleccionar método...</option>
+                        {% set metodos = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'OTRO'] %}
+                        {% for m in metodos %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="observaciones">Observaciones</label>
+                <input type="text" class="form-control" id="observaciones" name="observaciones" placeholder="Opcional">
+            </div>
+            <button type="submit" class="btn btn-primary" id="submitAbonoBtn">
+                <i class="fas fa-save"></i> Registrar Abono
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<script>
+const saldoPendiente = {{ cuenta.saldo }};
+function formatCurrency(val) { return '$' + parseFloat(val).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+document.addEventListener('DOMContentLoaded', function() {
+  const fechaInput = document.getElementById('fecha');
+  if (fechaInput) { fechaInput.value = new Date().toISOString().split('T')[0]; }
+});
+document.getElementById('abonoForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const monto = parseFloat(document.getElementById('monto').value) || 0;
+  const fecha = document.getElementById('fecha').value;
+  const metodoPago = document.getElementById('metodo_pago').value;
+  const observaciones = document.getElementById('observaciones').value;
+  if (monto <= 0) { alert('El monto debe ser mayor a cero.'); return; }
+  if (monto > saldoPendiente) { alert('El monto no puede ser mayor al saldo pendiente de ' + formatCurrency(saldoPendiente)); return; }
+  if (!fecha) { alert('Debe seleccionar una fecha.'); return; }
+  if (!metodoPago) { alert('Debe seleccionar un método de pago.'); return; }
+  const submitBtn = document.getElementById('submitAbonoBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+  fetch('{{ url_for("transactions.cuenta_abonar", cuenta_id=cuenta.id) }}', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ monto: monto, fecha: fecha, metodo_pago: metodoPago, observaciones: observaciones })
+  })
+  .then(res => res.json())
+  .then(data => { if (data.success) { window.location.reload(); } else { alert('Error: ' + (data.error || 'Error desconocido')); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-save"></i> Registrar Abono'; } })
+  .catch(err => { alert('Error de conexión: ' + err.message); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-save"></i> Registrar Abono'; });
+});
+</script>
+{% endblock %}

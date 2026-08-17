@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIBRA - Acceso denegado</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            color: #0a0a0a;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .error-container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 480px;
+            width: 100%;
+        }
+        .error-code {
+            font-size: 7.5rem;
+            font-weight: 200;
+            line-height: 1;
+            color: #e5e5e5;
+            letter-spacing: -0.06em;
+            margin-bottom: 1.5rem;
+            user-select: none;
+        }
+        .error-divider {
+            width: 48px;
+            height: 1px;
+            background: #e5e5e5;
+            margin: 0 auto 1.5rem;
+        }
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #0a0a0a;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        .error-msg {
+            font-size: 0.9375rem;
+            font-weight: 400;
+            color: #737373;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+        }
+        .btn-dashboard {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+        .btn-dashboard:hover {
+            background: #262626;
+            transform: translateY(-1px);
+        }
+        .btn-dashboard:active {
+            transform: translateY(0);
+        }
+        .btn-dashboard i {
+            font-size: 0.8125rem;
+        }
+        @media (max-width: 480px) {
+            .error-code { font-size: 5rem; }
+            .error-title { font-size: 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-code">403</div>
+        <div class="error-divider"></div>
+        <h1 class="error-title">Acceso denegado</h1>
+        <p class="error-msg">No tiene permisos suficientes para acceder a esta sección.</p>
+        <a href="{{ url_for('main.dashboard') }}" class="btn-dashboard">
+            <i class="fas fa-arrow-left"></i>
+            Volver al Dashboard
+        </a>
+    </div>
+</body>
+</html>

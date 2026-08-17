@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Vendedores{% endblock %}
+{% block page_title %}Vendedores{% endblock %}
+{% block content %}
+<div class="content-header">
+    <h2>{% if editing %}Editar Vendedor{% else %}Registrar Vendedor{% endif %}</h2>
+</div>
+
+<div class="card">
+    <form method="POST"
+          action="{% if editing %}{{ url_for('sales_team.vendedor_update', id=editing.id) }}{% else %}{{ url_for('sales_team.vendedor_crear') }}{% endif %}"
+          class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" name="nombre" class="form-control" required
+                   value="{{ editing.nombre if editing else '' }}" placeholder="Nombre del vendedor">
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-control"
+                   value="{{ editing.email if editing else '' }}" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="form-group">
+            <label for="telefono">Teléfono</label>
+            <input type="text" id="telefono" name="telefono" class="form-control"
+                   value="{{ editing.telefono if editing else '' }}" placeholder="Teléfono">
+        </div>
+        <div class="form-group">
+            <label for="porcentaje_comision">Porcentaje Comisión (%)</label>
+            <input type="number" id="porcentaje_comision" name="porcentaje_comision" class="form-control"
+                   step="0.01" min="0" max="100"
+                   value="{{ editing.porcentaje_comision if editing else '' }}" placeholder="0.00">
+        </div>
+        <div class="form-group">
+            <label for="estado">Estado</label>
+            <select id="estado" name="estado" class="form-control">
+                <option value="ACTIVO" {% if editing and editing.estado == 'ACTIVO' %}selected{% endif %}>ACTIVO</option>
+                <option value="INACTIVO" {% if editing and editing.estado == 'INACTIVO' %}selected{% endif %}>INACTIVO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="usuario_id">Usuario (opcional)</label>
+            <select id="usuario_id" name="usuario_id" class="form-control">
+                <option value="">-- Sin usuario --</option>
+                {% if usuarios %}
+                    {% for u in usuarios %}
+                    <option value="{{ u.id }}" {% if editing and editing.usuario_id == u.id %}selected{% endif %}>
+                        {{ u.nombre }} ({{ u.username }})
+                    </option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+        <div class="form-actions">
+            {% if editing %}
+            <a href="{{ url_for('sales_team.vendedores') }}" class="btn btn-secondary">Cancelar</a>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">
+                {% if editing %}Actualizar Vendedor{% else %}Registrar Vendedor{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="content-header">
+    <h2>Lista de Vendedores</h2>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Comisión %</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in vendedores %}
+                <tr>
+                    <td>{{ v.id }}</td>
+                    <td>{{ v.nombre }}</td>
+                    <td>{{ v.email or '-' }}</td>
+                    <td>{{ v.telefono or '-' }}</td>
+                    <td>{{ '%.2f' % v.porcentaje_comision | float }}%</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if v.estado == 'ACTIVO' else 'danger' }}">
+                            {{ v.estado }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('sales_team.vendedor_editar', id=v.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                        {% if current_user and current_user.rol == 'ADMIN' %}
+                        <form method="POST" action="{{ url_for('sales_team.vendedor_eliminar', id=v.id) }}" style="display:inline" onsubmit="return confirm('¿Está seguro?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">No hay vendedores registrados</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

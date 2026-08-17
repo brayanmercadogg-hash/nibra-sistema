@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Clientes{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-users" style="color:var(--text-muted);margin-right:8px;font-size:20px"></i>Clientes</h1>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3><i class="fas fa-{{ 'pen-to-square' if editing and cliente else 'user-plus' }}"></i> {% if editing and cliente %}Editar Cliente{% else %}Nuevo Cliente{% endif %}</h3>
+    </div>
+    <div class="card-body">
+        {% if editing and cliente %}
+        <form method="POST" action="{{ url_for('contacts.cliente_update', id=cliente.id) }}">
+        {% else %}
+        <form method="POST" action="{{ url_for('contacts.cliente_crear') }}">
+        {% endif %}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" name="nombre" class="form-control" required
+                           value="{{ cliente.nombre if editing and cliente else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" class="form-control"
+                           value="{{ cliente.email if editing and cliente else '' }}">
+                    <small class="form-text text-muted">Formato: usuario@dominio.com</small>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" name="telefono" class="form-control"
+                           value="{{ cliente.telefono if editing and cliente else '' }}">
+                </div>
+            </div>
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <input type="text" name="direccion" class="form-control"
+                           value="{{ cliente.direccion if editing and cliente else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Documento</label>
+                    <input type="text" name="documento" class="form-control"
+                           value="{{ cliente.documento if editing and cliente else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select name="estado" class="form-control">
+                        <option value="ACTIVO" {% if not editing or (cliente and cliente.estado == 'ACTIVO') %}selected{% endif %}>Activo</option>
+                        <option value="INACTIVO" {% if editing and cliente and cliente.estado == 'INACTIVO' %}selected{% endif %}>Inactivo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> {% if editing %}Actualizar{% else %}Crear{% endif %}</button>
+                {% if editing %}
+                <a href="{{ url_for('contacts.clientes') }}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancelar</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('contacts.clientes') }}" class="d-flex" style="gap:8px;">
+            <input type="text" name="search" class="form-control" placeholder="Buscar por nombre o código..." value="{{ search }}">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Buscar</button>
+            {% if search %}
+            <a href="{{ url_for('contacts.clientes') }}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Limpiar</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-list"></i> Lista de Clientes</h3>
+    </div>
+    <div class="card-body">
+        {% if clientes %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th>Documento</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in clientes %}
+                    <tr>
+                        <td><code style="font-size:12px;background:var(--border-light);padding:2px 6px;border-radius:var(--radius-xs)">{{ c.codigo }}</code></td>
+                        <td style="font-weight:500"><a href="{{ url_for('contacts.cliente_detalle', id=c.id) }}" style="color:var(--text);text-decoration:none;border-bottom:1px solid var(--border-light);transition:var(--transition)">{{ c.nombre }}</a></td>
+                        <td>{{ c.email or '-' }}</td>
+                        <td>{{ c.telefono or '-' }}</td>
+                        <td>{{ c.documento or '-' }}</td>
+                        <td><span class="badge badge-{{ 'success' if c.estado == 'ACTIVO' else 'danger' }}">{{ c.estado }}</span></td>
+                        <td class="actions-cell">
+                            <a href="{{ url_for('contacts.cliente_detalle', id=c.id) }}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
+                            <a href="{{ url_for('contacts.cliente_editar', id=c.id) }}" class="btn btn-sm btn-primary"><i class="fas fa-pen"></i></a>
+                            {% if current_user and current_user.rol == 'ADMIN' %}
+                            <form method="POST" action="{{ url_for('contacts.cliente_eliminar', id=c.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este cliente?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <p>No hay clientes registrados</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

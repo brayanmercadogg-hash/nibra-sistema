@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Ventas{% endblock %}
+{% block page_title %}Ventas{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Ventas</h1>
+    <a href="{{ url_for('transactions.venta_nueva') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nueva Venta
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Lista de Ventas</h3>
+        <span class="badge badge-primary">{{ ventas|length }} registro(s)</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Vendedor</th>
+                        <th>Total</th>
+                        <th>Descuento</th>
+                        <th>Pagado</th>
+                        <th>Saldo</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if ventas %}
+                        {% for v in ventas %}
+                        <tr>
+                            <td><span class="fw-bold">{{ v.codigo }}</span></td>
+                            <td>{{ v.fecha }}</td>
+                            <td>{{ v.cliente_nombre or 'Sin cliente' }}</td>
+                            <td>{{ v.vendedor_nombre or 'Sin vendedor' }}</td>
+                            <td class="fw-bold">{{ v.total|currency }}</td>
+                            <td class="text-muted">{{ v.descuento|currency }}</td>
+                            <td class="text-success">{{ v.pagado|currency }}</td>
+                            <td class="{% if v.saldo > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+                                {{ v.saldo|currency }}
+                            </td>
+                            <td>
+                                {% set estado = 'PAGADA' if v.saldo <= 0 else 'PENDIENTE' %}
+                                <span class="badge {% if estado == 'PAGADA' %}badge-success{% else %}badge-warning{% endif %}">
+                                    {{ estado }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>No hay ventas registradas.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

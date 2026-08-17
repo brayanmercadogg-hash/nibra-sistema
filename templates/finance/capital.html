@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block title %}Capital{% endblock %}
+{% block page_title %}Capital{% endblock %}
+{% block content %}
+<style>
+.capital-page .page-header h1 { font-weight: 600; font-size: 1.5rem; color: #111; letter-spacing: -0.02em; }
+.capital-page .page-header h1 i { color: #999; margin-right: 6px; }
+.capital-page .card { border: 1px solid #e5e5e5; border-radius: 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); margin-bottom: 1.25rem; }
+.capital-page .card-header { background: #fafafa; border-bottom: 1px solid #e5e5e5; padding: 0.75rem 1.25rem; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: space-between; }
+.capital-page .card-header h3 { font-size: 0.875rem; font-weight: 600; color: #333; margin: 0; text-transform: uppercase; letter-spacing: 0.04em; }
+.capital-page .card-header h3 i { color: #999; margin-right: 6px; }
+.capital-page .card-body { padding: 1.25rem; }
+.capital-page .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
+.capital-page .stat-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.04); transition: box-shadow .15s; }
+.capital-page .stat-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.capital-page .stat-card h6 { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #999; margin: 0.5rem 0 0.25rem; }
+.capital-page .stat-card h4 { font-size: 1.25rem; font-weight: 700; margin: 0; color: #111; letter-spacing: -0.02em; }
+.capital-page .stat-card i { font-size: 1.1rem; color: #bbb; }
+.capital-page .form-group label { font-size: 0.75rem; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+.capital-page .form-control, .capital-page .form-select { border: 1px solid #ddd; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #222; background: #fff; transition: border-color .15s; }
+.capital-page .form-control:focus, .capital-page .form-select:focus { border-color: #111; box-shadow: 0 0 0 2px rgba(0,0,0,.06); }
+.capital-page .input-group-text { background: #fafafa; border: 1px solid #ddd; border-radius: 6px; font-size: 0.8rem; color: #888; font-weight: 600; }
+.capital-page .btn { border-radius: 6px; font-size: 0.8rem; font-weight: 600; padding: 0.45rem 1rem; border: none; cursor: pointer; transition: all .15s; text-transform: uppercase; letter-spacing: 0.03em; }
+.capital-page .btn-primary { background: #111; color: #fff; }
+.capital-page .btn-primary:hover { background: #333; }
+.capital-page .btn-secondary { background: #f0f0f0; color: #555; }
+.capital-page .btn-secondary:hover { background: #e0e0e0; }
+.capital-page .btn-success { background: #111; color: #fff; }
+.capital-page .btn-success:hover { background: #333; }
+.capital-page .table { width: 100%; border-collapse: collapse; }
+.capital-page .table thead th { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #999; border-bottom: 2px solid #eee; padding: 0.75rem 1rem; background: transparent; }
+.capital-page .table tbody td { padding: 0.75rem 1rem; font-size: 0.85rem; color: #333; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.capital-page .table tbody tr:hover { background: #fafafa; }
+.capital-page .badge { font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 4px; letter-spacing: 0.02em; }
+.capital-page .badge-primary { background: #111; color: #fff; }
+.capital-page .badge-success { background: #f0fdf4; color: #166534; }
+.capital-page .badge-danger { background: #fef2f2; color: #991b1b; }
+.capital-page .badge-secondary { background: #f5f5f5; color: #888; }
+.capital-page .empty-state { text-align: center; padding: 3rem 1rem; color: #bbb; }
+.capital-page .empty-state i { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+.capital-page .empty-state p { margin: 0; font-size: 0.85rem; }
+.capital-page .text-danger { color: #dc2626 !important; }
+.capital-page .text-success { color: #16a34a !important; }
+.capital-page .text-primary { color: #111 !important; }
+.capital-page .text-info { color: #999 !important; }
+</style>
+
+<div class="capital-page">
+<div class="page-header">
+    <h1><i class="fas fa-university"></i> Capital</h1>
+</div>
+
+<div class="stat-cards">
+    <div class="stat-card" style="border-left:4px solid var(--info)">
+        <i class="fas fa-landmark text-info"></i>
+        <h6>Capital Inicial</h6>
+        <h4 class="text-primary">{{ inicial|currency }}</h4>
+    </div>
+    <div class="stat-card" style="border-left:4px solid var(--success)">
+        <i class="fas fa-plus-circle text-success"></i>
+        <h6>Aportes</h6>
+        <h4 class="text-success">{{ aportes|currency }}</h4>
+    </div>
+    <div class="stat-card" style="border-left:4px solid var(--danger)">
+        <i class="fas fa-minus-circle text-danger"></i>
+        <h6>Retiros</h6>
+        <h4 class="text-danger">{{ retiros|currency }}</h4>
+    </div>
+    <div class="stat-card" style="border-left:4px solid var(--primary)">
+        <i class="fas fa-balance-scale text-primary"></i>
+        <h6>Total Capital</h6>
+        <h4 class="text-primary">{{ total_capital|currency }}</h4>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3><i class="fas fa-{% if editando and movimiento %}edit{% else %}plus{% endif %}"></i> {% if editando and movimiento %}Editar Movimiento{% else %}Nuevo Movimiento de Capital{% endif %}</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('finance.capital') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="tipo">Tipo <span class="text-danger">*</span></label>
+                    <select class="form-select" id="tipo" name="tipo" required>
+                        <option value="">Seleccionar tipo...</option>
+                        <option value="INICIAL" {% if editando and movimiento and movimiento.tipo == 'INICIAL' %}selected{% endif %}>INICIAL</option>
+                        <option value="APORTE" {% if editando and movimiento and movimiento.tipo == 'APORTE' %}selected{% endif %}>APORTE</option>
+                        <option value="RETIRO" {% if editando and movimiento and movimiento.tipo == 'RETIRO' %}selected{% endif %}>RETIRO</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="concepto">Concepto <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="concepto" name="concepto" value="{{ movimiento.concepto if editando and movimiento else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="valor">Valor <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="valor" name="valor" step="0.01" min="0.01" value="{{ movimiento.valor if editando and movimiento else '' }}" required>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="fecha">Fecha <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="fecha" name="fecha" value="{{ movimiento.fecha if editando and movimiento else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="observaciones">Observaciones</label>
+                    <textarea class="form-control" id="observaciones" name="observaciones" rows="2">{{ movimiento.observaciones if editando and movimiento else '' }}</textarea>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> {% if editando and movimiento %}Actualizar{% else %}Guardar{% endif %}</button>
+                {% if editando and movimiento %}
+                    <a href="{{ url_for('finance.capital') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-list"></i> Movimientos de Capital</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Tipo</th>
+                        <th>Concepto</th>
+                        <th>Valor</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if movimientos %}
+                        {% for m in movimientos %}
+                        <tr>
+                            <td>{{ m.codigo }}</td>
+                            <td>
+                                {% if m.tipo == 'INICIAL' %}<span class="badge badge-primary">INICIAL</span>
+                                {% elif m.tipo == 'APORTE' %}<span class="badge badge-success">APORTE</span>
+                                {% elif m.tipo == 'RETIRO' %}<span class="badge badge-danger">RETIRO</span>
+                                {% else %}<span class="badge badge-secondary">{{ m.tipo }}</span>{% endif %}
+                            </td>
+                            <td>{{ m.concepto }}</td>
+                            <td class="fw-bold {% if m.tipo == 'RETIRO' %}text-danger{% else %}text-success{% endif %}">{{ m.valor|currency }}</td>
+                            <td>{{ m.fecha }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><p>No hay movimientos de capital registrados.</p></td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

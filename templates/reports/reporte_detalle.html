@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+{% block content %}
+<div class="content-header">
+    <h2>{{ titulo }}</h2>
+    <div class="header-actions">
+        <a href="{{ url_for('reports.index') }}" class="btn btn-secondary">Volver</a>
+    </div>
+</div>
+
+<div class="card filter-info">
+    <p><strong>Filtros aplicados:</strong>
+        {% if fecha_inicio %}Desde: {{ fecha_inicio }}{% endif %}
+        {% if fecha_fin %} &mdash; Hasta: {{ fecha_fin }}{% endif %}
+        {% if not fecha_inicio and not fecha_fin %}Sin filtros de fecha{% endif %}
+    </p>
+    <p><strong>Total registros:</strong> {{ datos | length }}</p>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    {% for col in columns %}
+                    <th>{{ col | replace('_', ' ') | title }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in datos %}
+                <tr>
+                    {% for col in columns %}
+                    <td>
+                        {% if row[col] is number %}
+                            ${{ '%.2f' % row[col] | float }}
+                        {% else %}
+                            {{ row[col] or '-' }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="{{ columns | length }}" class="text-center">No hay datos para mostrar</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if total is defined and total %}
+            <tfoot>
+                <tr>
+                    <th colspan="{{ columns | length - 1 }}" class="text-right">Total:</th>
+                    <th>${{ '%.2f' % total | float }}</th>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<div class="content-header" style="margin-top: 1rem;">
+    <div class="header-actions">
+        <a href="{{ url_for('reports.exportar', tipo=tipo, fecha_inicio=fecha_inicio, fecha_fin=fecha_fin) }}"
+           class="btn btn-success">Exportar CSV</a>
+        <button onclick="window.print()" class="btn btn-secondary">Imprimir</button>
+    </div>
+</div>
+{% endblock %}

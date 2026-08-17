@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Detalle Proveedor{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-truck"></i> Detalle del Proveedor</h1>
+    <a href="{{ url_for('contacts.proveedores') }}" class="btn btn-secondary">Volver</a>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header"><h3><i class="fas fa-id-card"></i> Informacion del Proveedor</h3></div>
+        <div class="card-body">
+            <p><strong>Codigo:</strong> {{ proveedor.codigo }}</p>
+            <p><strong>Nombre:</strong> {{ proveedor.nombre }}</p>
+            <p><strong>Email:</strong> {{ proveedor.email or '-' }}</p>
+            <p><strong>Telefono:</strong> {{ proveedor.telefono or '-' }}</p>
+            <p><strong>Direccion:</strong> {{ proveedor.direccion or '-' }}</p>
+            <p><strong>Documento:</strong> {{ proveedor.documento or '-' }}</p>
+            <p><strong>Estado:</strong> <span class="badge badge-{{ 'success' if proveedor.estado == 'ACTIVO' else 'danger' }}">{{ proveedor.estado }}</span></p>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3><i class="fas fa-shopping-basket"></i> Historial de Compras</h3></div>
+        <div class="card-body">
+            {% if compras %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr><th>ID</th><th>Fecha</th><th>Total</th><th>Pagado</th><th>Saldo</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for c in compras %}
+                        <tr>
+                            <td><a href="{{ url_for('transactions.compra_detalle', id=c.id) }}">#{{ c.id }}</a></td>
+                            <td>{{ c.fecha }}</td>
+                            <td>{{ c.total|currency }}</td>
+                            <td>{{ c.pagado|currency }}</td>
+                            <td>{{ c.saldo|currency }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No hay compras registradas para este proveedor.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

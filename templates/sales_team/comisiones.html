@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Comisiones{% endblock %}
+{% block page_title %}Comisiones{% endblock %}
+{% block content %}
+<div class="content-header">
+    <h2>Filtros</h2>
+</div>
+
+<div class="card">
+    <form method="GET" action="{{ url_for('sales_team.comisiones') }}" class="form-grid">
+        <div class="form-group">
+            <label for="vendedor_id">Vendedor</label>
+            <select id="vendedor_id" name="vendedor_id" class="form-control">
+                <option value="">-- Todos los vendedores --</option>
+                {% for v in vendedores %}
+                <option value="{{ v.id }}" {% if vendedor_id|string == v.id|string %}selected{% endif %}>
+                    {{ v.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="fecha_inicio">Fecha Inicio</label>
+            <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control"
+                   value="{{ fecha_inicio }}">
+        </div>
+        <div class="form-group">
+            <label for="fecha_fin">Fecha Fin</label>
+            <input type="date" id="fecha_fin" name="fecha_fin" class="form-control"
+                   value="{{ fecha_fin }}">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a href="{{ url_for('sales_team.comisiones') }}" class="btn btn-secondary">Limpiar</a>
+        </div>
+    </form>
+</div>
+
+<div class="content-header">
+    <h2>Resumen de Comisiones</h2>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Vendedor</th>
+                    <th>% Comisión</th>
+                    <th># Ventas</th>
+                    <th>Total Vendido</th>
+                    <th>Comisión Generada</th>
+                    <th>Comisión Pagada</th>
+                    <th>Comisión Pendiente</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in comisiones %}
+                <tr>
+                    <td>{{ c.vendedor_nombre }}</td>
+                    <td>{{ '%.2f' % c.porcentaje_comision | float }}%</td>
+                    <td>{{ c.ventas_count }}</td>
+                    <td>${{ '%.2f' % c.total_vendido | float }}</td>
+                    <td>${{ '%.2f' % c.comision_generada | float }}</td>
+                    <td>${{ '%.2f' % c.comision_pagada | float }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'danger' if c.comision_pendiente > 0 else 'success' }}">
+                            ${{ '%.2f' % c.comision_pendiente | float }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        {% if c.comision_pendiente > 0 %}
+                        <form method="POST" action="{{ url_for('sales_team.comision_pagar', comision_id=c.vendedor_id) }}"
+                              style="display:inline" onsubmit="return confirm('¿Registrar pago de comisiones para {{ c.vendedor_nombre }}?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="vendedor_id" value="{{ c.vendedor_id }}">
+                            <input type="hidden" name="vendedor_id_filter" value="{{ vendedor_id }}">
+                            <input type="hidden" name="fecha_inicio" value="{{ fecha_inicio }}">
+                            <input type="hidden" name="fecha_fin" value="{{ fecha_fin }}">
+                            <button type="submit" class="btn btn-sm btn-success">Pagar</button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted">Al día</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">No hay comisiones para mostrar</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

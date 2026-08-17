@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}Gastos{% endblock %}
+{% block page_title %}Gastos{% endblock %}
+{% block content %}
+<style>
+.gastos-page .page-header h1 { font-weight: 600; font-size: 1.5rem; color: #111; letter-spacing: -0.02em; }
+.gastos-page .page-header h1 i { color: #999; margin-right: 6px; }
+.gastos-page .card { border: 1px solid #e5e5e5; border-radius: 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); margin-bottom: 1.25rem; }
+.gastos-page .card-header { background: #fafafa; border-bottom: 1px solid #e5e5e5; padding: 0.75rem 1.25rem; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: space-between; }
+.gastos-page .card-header h3 { font-size: 0.875rem; font-weight: 600; color: #333; margin: 0; text-transform: uppercase; letter-spacing: 0.04em; }
+.gastos-page .card-header h3 i { color: #999; margin-right: 6px; }
+.gastos-page .card-body { padding: 1.25rem; }
+.gastos-page .form-group label { font-size: 0.75rem; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+.gastos-page .form-control, .gastos-page .form-select { border: 1px solid #ddd; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #222; background: #fff; transition: border-color .15s; }
+.gastos-page .form-control:focus, .gastos-page .form-select:focus { border-color: #111; box-shadow: 0 0 0 2px rgba(0,0,0,.06); }
+.gastos-page .input-group-text { background: #fafafa; border: 1px solid #ddd; border-radius: 6px; font-size: 0.8rem; color: #888; font-weight: 600; }
+.gastos-page .btn { border-radius: 6px; font-size: 0.8rem; font-weight: 600; padding: 0.45rem 1rem; border: none; cursor: pointer; transition: all .15s; text-transform: uppercase; letter-spacing: 0.03em; }
+.gastos-page .btn-primary { background: #111; color: #fff; }
+.gastos-page .btn-primary:hover { background: #333; }
+.gastos-page .btn-secondary { background: #f0f0f0; color: #555; }
+.gastos-page .btn-secondary:hover { background: #e0e0e0; }
+.gastos-page .btn-success { background: #111; color: #fff; }
+.gastos-page .btn-success:hover { background: #333; }
+.gastos-page .btn-warning { background: #fff; color: #111; border: 1px solid #ddd; }
+.gastos-page .btn-warning:hover { background: #f5f5f5; }
+.gastos-page .btn-danger { background: #fff; color: #111; border: 1px solid #ddd; }
+.gastos-page .btn-danger:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
+.gastos-page .table { width: 100%; border-collapse: collapse; }
+.gastos-page .table thead th { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #999; border-bottom: 2px solid #eee; padding: 0.75rem 1rem; background: transparent; }
+.gastos-page .table tbody td { padding: 0.75rem 1rem; font-size: 0.85rem; color: #333; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.gastos-page .table tbody tr:hover { background: #fafafa; }
+.gastos-page .table tfoot td { padding: 0.75rem 1rem; font-size: 0.85rem; border-top: 2px solid #eee; background: #fafafa; }
+.gastos-page .badge { font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 4px; letter-spacing: 0.02em; }
+.gastos-page .badge-info { background: #f0f0f0; color: #555; }
+.gastos-page .badge-warning { background: #fef3c7; color: #92400e; }
+.gastos-page .badge-primary { background: #111; color: #fff; }
+.gastos-page .badge-secondary { background: #f5f5f5; color: #888; }
+.gastos-page .badge-danger { background: #fef2f2; color: #991b1b; }
+.gastos-page .empty-state { text-align: center; padding: 3rem 1rem; color: #bbb; }
+.gastos-page .empty-state i { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+.gastos-page .empty-state p { margin: 0; font-size: 0.85rem; }
+.gastos-page .text-danger { color: #dc2626 !important; }
+.gastos-page .actions-cell { white-space: nowrap; }
+</style>
+
+<div class="gastos-page">
+<div class="page-header">
+    <h1><i class="fas fa-money-bill-wave"></i> Gastos</h1>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3><i class="fas fa-filter"></i> Filtrar por Fecha</h3>
+    </div>
+    <div class="card-body">
+        <form method="GET">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="start">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="start" name="start" value="{{ start or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="end">Fecha Fin</label>
+                    <input type="date" class="form-control" id="end" name="end" value="{{ end or '' }}">
+                </div>
+                <div class="form-group d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filtrar</button>
+                    <a href="{{ url_for('finance.gastos') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Limpiar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3><i class="fas fa-{% if editando and gasto %}edit{% else %}plus{% endif %}"></i> {% if editando and gasto %}Editar Gasto #{{ gasto.id }}{% else %}Nuevo Gasto{% endif %}</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{% if editando and gasto %}{{ url_for('finance.editar_gasto', id=gasto.id) }}{% else %}{{ url_for('finance.gastos') }}{% endif %}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="concepto">Concepto <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="concepto" name="concepto" value="{{ gasto.concepto if editando and gasto else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="categoria">Categoría <span class="text-danger">*</span></label>
+                    <select class="form-select" id="categoria" name="categoria" required>
+                        <option value="">Seleccionar categoría...</option>
+                        {% set categorias = ['Operacion', 'Marketing', 'Personal', 'Servicios', 'Otros'] %}
+                        {% for cat in categorias %}
+                            <option value="{{ cat }}" {% if editando and gasto and gasto.categoria == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fecha">Fecha <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="fecha" name="fecha" value="{{ gasto.fecha if editando and gasto else '' }}" required>
+                </div>
+            </div>
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="valor">Valor <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="valor" name="valor" step="0.01" min="0" value="{{ gasto.valor if editando and gasto else '' }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="metodo_pago">Método de Pago <span class="text-danger">*</span></label>
+                    <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                        <option value="">Seleccionar método...</option>
+                        {% set metodos = ['Efectivo', 'Transferencia', 'Tarjeta Crédito', 'Tarjeta Débito', 'Cheque', 'PSE', 'Otro'] %}
+                        {% for m in metodos %}
+                            <option value="{{ m }}" {% if editando and gasto and gasto.metodo_pago == m %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="responsable">Responsable</label>
+                    <input type="text" class="form-control" id="responsable" name="responsable" value="{{ gasto.responsable if editando and gasto else '' }}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="observaciones">Observaciones</label>
+                <textarea class="form-control" id="observaciones" name="observaciones" rows="2">{{ gasto.observaciones if editando and gasto else '' }}</textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> {% if editando and gasto %}Actualizar{% else %}Guardar{% endif %}</button>
+                {% if editando and gasto %}
+                    <a href="{{ url_for('finance.gastos') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-list"></i> Lista de Gastos</h3>
+        <span class="badge badge-danger">Total: {{ total|currency if total else '$0.00' }}</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Concepto</th>
+                        <th>Categoría</th>
+                        <th>Fecha</th>
+                        <th>Valor</th>
+                        <th>Método Pago</th>
+                        <th>Responsable</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if gastos %}
+                        {% for g in gastos %}
+                        <tr>
+                            <td>#{{ g.id }}</td>
+                            <td>{{ g.concepto }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if g.categoria == 'Operacion' %}badge-info
+                                    {% elif g.categoria == 'Marketing' %}badge-warning
+                                    {% elif g.categoria == 'Personal' %}badge-primary
+                                    {% elif g.categoria == 'Servicios' %}badge-secondary
+                                    {% else %}badge-secondary{% endif %}">
+                                    {{ g.categoria }}
+                                </span>
+                            </td>
+                            <td>{{ g.fecha }}</td>
+                            <td class="text-danger fw-bold">{{ g.valor|currency }}</td>
+                            <td>{{ g.metodo_pago }}</td>
+                            <td>{{ g.responsable or '-' }}</td>
+                            <td class="actions-cell">
+                                <a href="{{ url_for('finance.editar_gasto', id=g.id) }}" class="btn btn-sm btn-warning" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if current_user and current_user.rol == 'ADMIN' %}
+                                <form method="POST" action="{{ url_for('finance.eliminar_gasto', id=g.id) }}" style="display:inline" onsubmit="return confirm('¿Está seguro?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i><p>No hay gastos registrados.</p></td></tr>
+                    {% endif %}
+                </tbody>
+                {% if gastos %}
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-end fw-bold" style="background:var(--danger-bg)">Total:</td>
+                        <td class="text-danger fw-bold" style="background:var(--danger-bg)">{{ total|currency if total else '$0.00' }}</td>
+                        <td colspan="3" style="background:var(--danger-bg)"></td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

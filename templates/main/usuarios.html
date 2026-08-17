@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}Usuarios{% endblock %}
+{% block page_title %}Gestión de Usuarios{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="align-items: start;">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-user-plus"></i> {{ 'Editar Usuario' if editing else 'Crear Usuario' }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('main.usuarios') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="{{ 'edit' if editing else 'create' }}">
+                {% if editing %}
+                    <input type="hidden" name="user_id" value="{{ editing.id }}">
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control"
+                           value="{{ editing.username if editing else '' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña {{ '(dejar vacío para mantener)' if editing else '' }}</label>
+                    <input type="password" id="password" name="password" class="form-control"
+                           {{ '' if editing else 'required' }}>
+                    <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 10px; margin-top: 8px;">
+                        <small style="color: #495057; font-weight: 600;">Requisitos de contrasena:</small>
+                        <ul style="list-style: none; padding: 0; margin: 4px 0 0 0;">
+                            <li style="color: #6c757d; font-size: 0.75rem;">Minimo 8 caracteres</li>
+                            <li style="color: #6c757d; font-size: 0.75rem;">Al menos 1 mayuscula, 1 minuscula</li>
+                            <li style="color: #6c757d; font-size: 0.75rem;">Al menos 1 numero y 1 caracter especial</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="nombre">Nombre</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control"
+                           value="{{ editing.nombre if editing else '' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-control"
+                           value="{{ editing.email if editing else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="rol">Rol</label>
+                    <select id="rol" name="rol" class="form-control" required>
+                        <option value="ADMIN" {{ 'selected' if editing and editing.rol == 'ADMIN' }}>ADMIN</option>
+                        <option value="SOCIO" {{ 'selected' if editing and editing.rol == 'SOCIO' }}>SOCIO</option>
+                        <option value="VENDEDOR" {{ 'selected' if editing and editing.rol == 'VENDEDOR' else ('selected' if not editing else '') }}>VENDEDOR</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas {{ 'fa-save' if editing else 'fa-plus' }}"></i>
+                        {{ 'Actualizar' if editing else 'Crear Usuario' }}
+                    </button>
+                    {% if editing %}
+                        <a href="{{ url_for('main.usuarios') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-users"></i> Usuarios Registrados</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>#{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.nombre }}</td>
+                            <td>{{ user.email or 'N/A' }}</td>
+                            <td>
+                                {% if user.rol == 'ADMIN' %}
+                                    <span class="badge badge-danger">ADMIN</span>
+                                {% elif user.rol == 'SOCIO' %}
+                                    <span class="badge badge-info">SOCIO</span>
+                                {% else %}
+                                    <span class="badge badge-success">VENDEDOR</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.estado == 'ACTIVO' %}
+                                    <span class="badge badge-success">ACTIVO</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">INACTIVO</span>
+                                {% endif %}
+                            </td>
+                            <td class="actions-cell">
+                                <a href="{{ url_for('main.usuarios') }}" class="btn btn-sm btn-outline"
+                                   onclick="editUser({{ user.id }}, '{{ user.username }}', '{{ user.nombre }}', '{{ user.email or '' }}', '{{ user.rol }}')">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('main.usuarios') }}" style="display:inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirmDelete('{{ user.username }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not users %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No hay usuarios registrados</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function confirmDelete(username) {
+        return confirm('¿Está seguro de eliminar al usuario "' + username + '"? Esta acción no se puede deshacer.');
+    }
+
+    function editUser(id, username, nombre, email, rol) {
+        var form = document.querySelector('.card form');
+        form.querySelector('input[name="action"]').value = 'edit';
+
+        var userIdInput = form.querySelector('input[name="user_id"]');
+        if (userIdInput) {
+            userIdInput.value = id;
+        } else {
+            userIdInput = document.createElement('input');
+            userIdInput.type = 'hidden';
+            userIdInput.name = 'user_id';
+            userIdInput.value = id;
+            form.appendChild(userIdInput);
+        }
+
+        form.querySelector('#username').value = username;
+        form.querySelector('#password').value = '';
+        form.querySelector('#password').removeAttribute('required');
+        form.querySelector('#nombre').value = nombre;
+        form.querySelector('#email').value = email;
+        form.querySelector('#rol').value = rol;
+
+        var header = document.querySelector('.card-header h3');
+        header.innerHTML = '<i class="fas fa-user-edit"></i> Editar Usuario';
+
+        var submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Actualizar';
+        submitBtn.className = 'btn btn-primary';
+
+        var cancelBtn = document.createElement('a');
+        cancelBtn.href = '{{ url_for("main.usuarios") }}';
+        cancelBtn.className = 'btn btn-secondary';
+        cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+        cancelBtn.style.marginLeft = '8px';
+
+        var actionsDiv = form.querySelector('.form-actions');
+        var existingCancel = actionsDiv.querySelector('.btn-secondary');
+        if (existingCancel) existingCancel.remove();
+        actionsDiv.appendChild(cancelBtn);
+    }
+</script>
+{% endblock %}

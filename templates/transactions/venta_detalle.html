@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Detalle Venta {{ venta.codigo }}{% endblock %}
+{% block page_title %}Detalle Venta {{ venta.codigo }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Venta {{ venta.codigo }}</h1>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('transactions.ventas_list') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+        <a href="{{ url_for('transactions.venta_editar_form', id=venta.id) }}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3>Información de la Venta</h3>
+    </div>
+    <div class="card-body">
+        <div class="grid-4 mb-3">
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Código</div>
+                <div class="fw-bold" style="font-size:16px;margin-top:4px">{{ venta.codigo }}</div>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Cliente</div>
+                <div class="fw-bold" style="font-size:16px;margin-top:4px">{{ venta.cliente_nombre or 'Sin cliente' }}</div>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Vendedor</div>
+                <div class="fw-bold" style="font-size:16px;margin-top:4px">{{ venta.vendedor_nombre or 'Sin vendedor' }}</div>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Fecha</div>
+                <div class="fw-bold" style="font-size:16px;margin-top:4px">{{ venta.fecha }}</div>
+            </div>
+        </div>
+        <div class="grid-4 mb-3">
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Método de Pago</div>
+                <div style="margin-top:4px">
+                    <span class="badge
+                        {% if venta.metodo_pago == 'EFECTIVO' %}badge-success
+                        {% elif venta.metodo_pago == 'TARJETA' %}badge-primary
+                        {% elif venta.metodo_pago == 'TRANSFERENCIA' %}badge-info
+                        {% else %}badge-secondary{% endif %}">
+                        {{ venta.metodo_pago }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+        <div class="grid-4">
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Total</div>
+                <div class="fw-bold" style="font-size:20px;margin-top:4px">{{ venta.total|currency }}</div>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Descuento</div>
+                <div class="fw-bold text-warning" style="font-size:20px;margin-top:4px">{{ venta.descuento|currency }}</div>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Pagado</div>
+                <div class="fw-bold text-success" style="font-size:20px;margin-top:4px">{{ venta.pagado|currency }}</div>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Saldo</div>
+                <div class="fw-bold {% if venta.saldo > 0 %}text-danger{% else %}text-success{% endif %}" style="font-size:20px;margin-top:4px">
+                    {{ venta.saldo|currency }}
+                </div>
+            </div>
+        </div>
+        {% if venta.observaciones %}
+        <div style="margin-top:16px">
+            <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Observaciones</div>
+            <div style="margin-top:4px">{{ venta.observaciones }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3>Productos de la Venta</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th>Descuento</th>
+                        <th>Subtotal</th>
+                        <th>Costo</th>
+                        <th>Ganancia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if detalles %}
+                        {% for d in detalles %}
+                        <tr>
+                            <td>{{ d.nombre_producto }}</td>
+                            <td>{{ d.cantidad }}</td>
+                            <td>{{ d.precio|currency }}</td>
+                            <td class="text-muted">{{ d.descuento|currency }}</td>
+                            <td class="fw-bold">{{ d.subtotal|currency }}</td>
+                            <td class="text-danger">{{ d.costo|currency }}</td>
+                            <td class="text-success fw-bold">{{ d.ganancia|currency }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="7" class="empty-state"><i class="fas fa-inbox"></i><p>No hay detalles registrados.</p></td></tr>
+                    {% endif %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-end fw-bold" style="background:var(--warning-bg)">Total:</td>
+                        <td class="fw-bold" style="background:var(--warning-bg)">{{ venta.total|currency }}</td>
+                        <td colspan="2" style="background:var(--warning-bg)"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex gap-2">
+    <a href="{{ url_for('transactions.ventas_list') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver a Ventas
+    </a>
+    <a href="{{ url_for('transactions.venta_editar_form', id=venta.id) }}" class="btn btn-primary">
+        <i class="fas fa-edit"></i> Editar Venta
+    </a>
+</div>
+{% endblock %}

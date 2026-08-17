@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% block title %}Utilidades{% endblock %}
+{% block page_title %}Utilidades{% endblock %}
+{% block content %}
+<style>
+.utilidades-page .page-header h1 { font-weight: 600; font-size: 1.5rem; color: #111; letter-spacing: -0.02em; }
+.utilidades-page .page-header h1 i { color: #999; margin-right: 6px; }
+.utilidades-page .card { border: 1px solid #e5e5e5; border-radius: 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); margin-bottom: 1.25rem; }
+.utilidades-page .card-header { background: #fafafa; border-bottom: 1px solid #e5e5e5; padding: 0.75rem 1.25rem; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: space-between; }
+.utilidades-page .card-header h3 { font-size: 0.875rem; font-weight: 600; color: #333; margin: 0; text-transform: uppercase; letter-spacing: 0.04em; }
+.utilidades-page .card-header h3 i { color: #999; margin-right: 6px; }
+.utilidades-page .card-body { padding: 1.25rem; }
+.utilidades-page .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
+.utilidades-page .stat-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.04); transition: box-shadow .15s; }
+.utilidades-page .stat-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.utilidades-page .stat-card h6 { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #999; margin: 0.5rem 0 0.25rem; }
+.utilidades-page .stat-card h4 { font-size: 1.15rem; font-weight: 700; margin: 0; color: #111; letter-spacing: -0.02em; }
+.utilidades-page .stat-card i { font-size: 1.1rem; color: #bbb; }
+.utilidades-page .form-group label { font-size: 0.75rem; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+.utilidades-page .form-control, .utilidades-page .form-select { border: 1px solid #ddd; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #222; background: #fff; transition: border-color .15s; }
+.utilidades-page .form-control:focus, .utilidades-page .form-select:focus { border-color: #111; box-shadow: 0 0 0 2px rgba(0,0,0,.06); }
+.utilidades-page .btn { border-radius: 6px; font-size: 0.8rem; font-weight: 600; padding: 0.45rem 1rem; border: none; cursor: pointer; transition: all .15s; text-transform: uppercase; letter-spacing: 0.03em; }
+.utilidades-page .btn-primary { background: #111; color: #fff; }
+.utilidades-page .btn-primary:hover { background: #333; }
+.utilidades-page .btn-secondary { background: #f0f0f0; color: #555; }
+.utilidades-page .btn-secondary:hover { background: #e0e0e0; }
+.utilidades-page .alert-info { background: #fafafa; border: 1px solid #e5e5e5; border-radius: 8px; padding: 1.25rem; color: #333; }
+.utilidades-page .alert-info strong { color: #111; }
+.utilidades-page .badge { font-size: 0.7rem; font-weight: 600; padding: 0.35rem 0.75rem; border-radius: 4px; letter-spacing: 0.02em; }
+.utilidades-page .badge-success { background: #f0fdf4; color: #166534; }
+.utilidades-page .badge-danger { background: #fef2f2; color: #991b1b; }
+.utilidades-page .badge-warning { background: #fef3c7; color: #92400e; }
+.utilidades-page .badge-primary { background: #111; color: #fff; }
+.utilidades-page .table { width: 100%; border-collapse: collapse; }
+.utilidades-page .table thead th { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #999; border-bottom: 2px solid #eee; padding: 0.75rem 1rem; background: transparent; }
+.utilidades-page .table tbody td { padding: 0.75rem 1rem; font-size: 0.85rem; color: #333; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.utilidades-page .table tbody tr:hover { background: #fafafa; }
+.utilidades-page .table tfoot td { padding: 0.75rem 1rem; font-size: 0.85rem; border-top: 2px solid #eee; background: #fafafa; }
+.utilidades-page .empty-state { text-align: center; padding: 3rem 1rem; color: #bbb; }
+.utilidades-page .empty-state i { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+.utilidades-page .empty-state p { margin: 0; font-size: 0.85rem; }
+.utilidades-page .text-success { color: #16a34a !important; }
+.utilidades-page .text-danger { color: #dc2626 !important; }
+</style>
+
+<div class="utilidades-page">
+<div class="page-header">
+    <h1><i class="fas fa-chart-pie"></i> Utilidades</h1>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3><i class="fas fa-filter"></i> Filtrar por Rango de Fechas</h3>
+    </div>
+    <div class="card-body">
+        <form method="GET">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="start">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="start" name="start" value="{{ start or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="end">Fecha Fin</label>
+                    <input type="date" class="form-control" id="end" name="end" value="{{ end or '' }}">
+                </div>
+                <div class="form-group d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filtrar</button>
+                    <a href="{{ url_for('finance.utilidades') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Limpiar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="stat-cards">
+    <div class="stat-card" style="border-left:4px solid var(--success)">
+        <i class="fas fa-arrow-down text-success"></i>
+        <h6>Ingresos</h6>
+        <h4 class="text-success">{{ total_ingresos|currency if total_ingresos else '$0.00' }}</h4>
+    </div>
+    <div class="stat-card" style="border-left:4px solid var(--danger)">
+        <i class="fas fa-industry text-danger"></i>
+        <h6>Costos</h6>
+        <h4 class="text-danger">{{ total_costos|currency if total_costos else '$0.00' }}</h4>
+    </div>
+    <div class="stat-card" style="border-left:4px solid var(--warning)">
+        <i class="fas fa-money-bill-wave text-warning"></i>
+        <h6>Gastos</h6>
+        <h4 style="color:var(--orange)">{{ total_gastos|currency if total_gastos else '$0.00' }}</h4>
+    </div>
+    <div class="stat-card" style="border-left:4px solid var(--purple)">
+        <i class="fas fa-calculator" style="color:var(--purple)"></i>
+        <h6>Utilidad Bruta</h6>
+        <h4 style="color:var(--purple)">{{ utilidad_bruta|currency if utilidad_bruta else '$0.00' }}</h4>
+    </div>
+    <div class="stat-card" style="border-left:4px solid var(--primary)">
+        <i class="fas fa-chart-bar text-primary"></i>
+        <h6>Utilidad Neta</h6>
+        <h4 class="text-primary">{{ utilidad_neta|currency if utilidad_neta else '$0.00' }}</h4>
+    </div>
+    <div class="stat-card" style="border-left:4px solid var(--pink)">
+        <i class="fas fa-share-alt" style="color:var(--pink)"></i>
+        <h6>Distribuible</h6>
+        <h4 style="color:var(--pink)">{{ distribuible|currency if distribuible else '$0.00' }}</h4>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3><i class="fas fa-square-root-alt"></i> Fórmula de Cálculo</h3>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info mb-0">
+            <div>
+                <strong style="font-size:14px"><i class="fas fa-calculator"></i> Utilidad Neta</strong>
+                <div class="d-flex flex-wrap align-items-center gap-2" style="margin-top:8px;font-size:14px">
+                    <span class="badge badge-success px-3 py-2">INGRESOS: {{ total_ingresos|currency if total_ingresos else '$0.00' }}</span>
+                    <span class="fw-bold">-</span>
+                    <span class="badge badge-danger px-3 py-2">COSTOS: {{ total_costos|currency if total_costos else '$0.00' }}</span>
+                    <span class="fw-bold">-</span>
+                    <span class="badge badge-warning px-3 py-2">GASTOS: {{ total_gastos|currency if total_gastos else '$0.00' }}</span>
+                    <span class="fw-bold">=</span>
+                    <span class="badge badge-primary px-3 py-2">UTILIDAD NETA: {{ utilidad_neta|currency if utilidad_neta else '$0.00' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-list"></i> Desglose por Concepto</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th class="text-end">Ingresos</th>
+                        <th class="text-end">Costos</th>
+                        <th class="text-end">Gastos</th>
+                        <th class="text-end">Utilidad Neta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if desglose %}
+                        {% for d in desglose %}
+                        <tr>
+                            <td>{{ d.concepto }}</td>
+                            <td class="text-end text-success fw-bold">{{ d.ingresos|currency if d.ingresos else '$0.00' }}</td>
+                            <td class="text-end text-danger fw-bold">{{ d.costos|currency if d.costos else '$0.00' }}</td>
+                            <td class="text-end fw-bold" style="color:var(--orange)">{{ d.gastos|currency if d.gastos else '$0.00' }}</td>
+                            <td class="text-end text-primary fw-bold">{{ d.utilidad|currency if d.utilidad else '$0.00' }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><p>No hay datos para el periodo seleccionado.</p></td></tr>
+                    {% endif %}
+                </tbody>
+                {% if desglose %}
+                <tfoot>
+                    <tr style="background:var(--warning-bg)">
+                        <td class="fw-bold">TOTAL</td>
+                        <td class="text-end text-success fw-bold">{{ total_ingresos|currency if total_ingresos else '$0.00' }}</td>
+                        <td class="text-end text-danger fw-bold">{{ total_costos|currency if total_costos else '$0.00' }}</td>
+                        <td class="text-end fw-bold" style="color:var(--orange)">{{ total_gastos|currency if total_gastos else '$0.00' }}</td>
+                        <td class="text-end text-primary fw-bold">{{ utilidad_neta|currency if utilidad_neta else '$0.00' }}</td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

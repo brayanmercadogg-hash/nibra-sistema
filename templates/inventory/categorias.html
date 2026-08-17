@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Categorias{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-tags" style="color:var(--text-muted);margin-right:8px;font-size:20px"></i>Categorías</h1>
+</div>
+
+<div class="content-grid">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-{{ 'pen-to-square' if categoria else 'plus' }}"></i> {% if categoria %}Editar Categoría{% else %}Nueva Categoría{% endif %}</h3>
+        </div>
+        <div class="card-body">
+            {% if categoria %}
+            <form method="POST" action="{{ url_for('inventory.actualizar_categoria', id=categoria.id) }}">
+            {% else %}
+            <form method="POST" action="{{ url_for('inventory.crear_categoria') }}">
+            {% endif %}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label for="nombre">Nombre</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" required
+                           value="{{ categoria.nombre if categoria else '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <input type="text" id="descripcion" name="descripcion" class="form-control"
+                           value="{{ categoria.descripcion if categoria else '' }}">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i> {% if categoria %}Actualizar{% else %}Crear{% endif %}
+                    </button>
+                    {% if categoria %}
+                    <a href="{{ url_for('inventory.categorias') }}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancelar</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-list"></i> Lista de Categorías</h3>
+        </div>
+        <div class="card-body">
+            {% if categorias %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in categorias %}
+                        <tr>
+                            <td style="font-weight:500;color:var(--text-muted)">{{ c.id }}</td>
+                            <td style="font-weight:500">{{ c.nombre }}</td>
+                            <td>{{ c.descripcion or '-' }}</td>
+                            <td class="actions-cell">
+                                <a href="{{ url_for('inventory.editar_categoria', id=c.id) }}" class="btn btn-sm btn-primary"><i class="fas fa-pen"></i></a>
+                                {% if current_user and current_user.rol == 'ADMIN' %}
+                                <form method="POST" action="{{ url_for('inventory.eliminar_categoria', id=c.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar esta categoría?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-tags"></i>
+                <p>No hay categorías registradas</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

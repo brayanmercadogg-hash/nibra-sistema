@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Socios{% endblock %}
+{% block page_title %}Socios{% endblock %}
+{% block content %}
+<div class="content-header">
+    <h2>{% if editing %}Editar Socio{% else %}Registrar Socio{% endif %}</h2>
+</div>
+
+<div class="card">
+    <form method="POST" action="{{ url_for('partners.socios') }}" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" name="nombre" class="form-control" required
+                   value="{{ editing.nombre if editing else '' }}" placeholder="Nombre del socio">
+        </div>
+        <div class="form-group">
+            <label for="porcentaje">Porcentaje (%)</label>
+            <input type="number" id="porcentaje" name="porcentaje" class="form-control" required step="0.01" min="0" max="100"
+                   value="{{ editing.porcentaje if editing else '' }}" placeholder="0.00">
+        </div>
+        <div class="form-group">
+            <label for="capital_aportado">Capital Aportado</label>
+            <input type="number" id="capital_aportado" name="capital_aportado" class="form-control" step="0.01" min="0"
+                   value="{{ editing.capital_aportado if editing else '' }}" placeholder="0.00">
+        </div>
+        <div class="form-group">
+            <label for="fecha_ingreso">Fecha de Ingreso</label>
+            <input type="date" id="fecha_ingreso" name="fecha_ingreso" class="form-control"
+                   value="{{ editing.fecha_ingreso if editing else '' }}">
+        </div>
+        <div class="form-group">
+            <label for="estado">Estado</label>
+            <select id="estado" name="estado" class="form-control">
+                <option value="ACTIVO" {% if editing and editing.estado == 'ACTIVO' %}selected{% endif %}>ACTIVO</option>
+                <option value="INACTIVO" {% if editing and editing.estado == 'INACTIVO' %}selected{% endif %}>INACTIVO</option>
+            </select>
+        </div>
+        <div class="form-actions">
+            {% if editing %}
+            <a href="{{ url_for('partners.socios') }}" class="btn btn-secondary">Cancelar</a>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">
+                {% if editing %}Actualizar Socio{% else %}Registrar Socio{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="content-header">
+    <h2>Lista de Socios</h2>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Porcentaje (%)</th>
+                    <th>Capital</th>
+                    <th>Fecha Ingreso</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for socio in socios %}
+                <tr>
+                    <td>{{ socio.id }}</td>
+                    <td>{{ socio.nombre }}</td>
+                    <td>{{ '%.2f' % socio.porcentaje | float }}</td>
+                    <td>${{ '%.2f' % socio.capital_aportado | float }}</td>
+                    <td>{{ socio.fecha_ingreso or '-' }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if socio.estado == 'ACTIVO' else 'danger' }}">
+                            {{ socio.estado }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('partners.editar_socio', id=socio.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                        {% if current_user and current_user.rol == 'ADMIN' %}
+                        <form method="POST" action="{{ url_for('partners.eliminar_socio', id=socio.id) }}" style="display:inline" onsubmit="return confirm('¿Está seguro?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">No hay socios registrados</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="2">Total Porcentaje</th>
+                    <th>
+                        {% set total = socios | map(attribute='porcentaje') | sum %}
+                        {{ '%.2f' % total | float }}%
+                    </th>
+                    <th colspan="4"></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endblock %}

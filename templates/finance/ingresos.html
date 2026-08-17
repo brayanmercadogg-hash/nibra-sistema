@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}Ingresos{% endblock %}
+{% block page_title %}Ingresos{% endblock %}
+{% block content %}
+<style>
+.ingresos-page .page-header h1 { font-weight: 600; font-size: 1.5rem; color: #111; letter-spacing: -0.02em; }
+.ingresos-page .page-header h1 i { color: #999; margin-right: 6px; }
+.ingresos-page .card { border: 1px solid #e5e5e5; border-radius: 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); margin-bottom: 1.25rem; }
+.ingresos-page .card-header { background: #fafafa; border-bottom: 1px solid #e5e5e5; padding: 0.75rem 1.25rem; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: space-between; }
+.ingresos-page .card-header h3 { font-size: 0.875rem; font-weight: 600; color: #333; margin: 0; text-transform: uppercase; letter-spacing: 0.04em; }
+.ingresos-page .card-header h3 i { color: #999; margin-right: 6px; }
+.ingresos-page .card-body { padding: 1.25rem; }
+.ingresos-page .form-group label { font-size: 0.75rem; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+.ingresos-page .form-control, .ingresos-page .form-select { border: 1px solid #ddd; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #222; background: #fff; transition: border-color .15s; }
+.ingresos-page .form-control:focus, .ingresos-page .form-select:focus { border-color: #111; box-shadow: 0 0 0 2px rgba(0,0,0,.06); }
+.ingresos-page .input-group-text { background: #fafafa; border: 1px solid #ddd; border-radius: 6px; font-size: 0.8rem; color: #888; font-weight: 600; }
+.ingresos-page .btn { border-radius: 6px; font-size: 0.8rem; font-weight: 600; padding: 0.45rem 1rem; border: none; cursor: pointer; transition: all .15s; text-transform: uppercase; letter-spacing: 0.03em; }
+.ingresos-page .btn-primary { background: #111; color: #fff; }
+.ingresos-page .btn-primary:hover { background: #333; }
+.ingresos-page .btn-secondary { background: #f0f0f0; color: #555; }
+.ingresos-page .btn-secondary:hover { background: #e0e0e0; }
+.ingresos-page .btn-success { background: #111; color: #fff; }
+.ingresos-page .btn-success:hover { background: #333; }
+.ingresos-page .btn-warning { background: #fff; color: #111; border: 1px solid #ddd; }
+.ingresos-page .btn-warning:hover { background: #f5f5f5; }
+.ingresos-page .btn-danger { background: #fff; color: #111; border: 1px solid #ddd; }
+.ingresos-page .btn-danger:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
+.ingresos-page .table { width: 100%; border-collapse: collapse; }
+.ingresos-page .table thead th { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #999; border-bottom: 2px solid #eee; padding: 0.75rem 1rem; background: transparent; }
+.ingresos-page .table tbody td { padding: 0.75rem 1rem; font-size: 0.85rem; color: #333; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.ingresos-page .table tbody tr:hover { background: #fafafa; }
+.ingresos-page .table tfoot td { padding: 0.75rem 1rem; font-size: 0.85rem; border-top: 2px solid #eee; background: #fafafa; }
+.ingresos-page .badge { font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 4px; letter-spacing: 0.02em; }
+.ingresos-page .badge-success { background: #f0fdf4; color: #166534; }
+.ingresos-page .badge-info { background: #f0f0f0; color: #555; }
+.ingresos-page .badge-primary { background: #111; color: #fff; }
+.ingresos-page .badge-warning { background: #fef3c7; color: #92400e; }
+.ingresos-page .badge-secondary { background: #f5f5f5; color: #888; }
+.ingresos-page .empty-state { text-align: center; padding: 3rem 1rem; color: #bbb; }
+.ingresos-page .empty-state i { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+.ingresos-page .empty-state p { margin: 0; font-size: 0.85rem; }
+.ingresos-page .text-success { color: #16a34a !important; }
+.ingresos-page .actions-cell { white-space: nowrap; }
+</style>
+
+<div class="ingresos-page">
+<div class="page-header">
+    <h1><i class="fas fa-arrow-down"></i> Ingresos</h1>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3><i class="fas fa-filter"></i> Filtrar por Fecha</h3>
+    </div>
+    <div class="card-body">
+        <form method="GET">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="start">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="start" name="start" value="{{ start or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="end">Fecha Fin</label>
+                    <input type="date" class="form-control" id="end" name="end" value="{{ end or '' }}">
+                </div>
+                <div class="form-group d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filtrar</button>
+                    <a href="{{ url_for('finance.ingresos') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Limpiar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h3><i class="fas fa-{% if editando and ingreso %}edit{% else %}plus{% endif %}"></i> {% if editando and ingreso %}Editar Ingreso #{{ ingreso.id }}{% else %}Nuevo Ingreso{% endif %}</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{% if editando and ingreso %}{{ url_for('finance.editar_ingreso', id=ingreso.id) }}{% else %}{{ url_for('finance.ingresos') }}{% endif %}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="concepto">Concepto <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="concepto" name="concepto" value="{{ ingreso.concepto if editando and ingreso else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="categoria">Categoría <span class="text-danger">*</span></label>
+                    <select class="form-select" id="categoria" name="categoria" required>
+                        <option value="">Seleccionar categoría...</option>
+                        {% set categorias = ['Ventas', 'Servicios', 'Consultoria', 'Comisiones', 'Otros'] %}
+                        {% for cat in categorias %}
+                            <option value="{{ cat }}" {% if editando and ingreso and ingreso.categoria == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fecha">Fecha <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="fecha" name="fecha" value="{{ ingreso.fecha if editando and ingreso else '' }}" required>
+                </div>
+            </div>
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="valor">Valor <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="valor" name="valor" step="0.01" min="0" value="{{ ingreso.valor if editando and ingreso else '' }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="metodo_pago">Método de Pago <span class="text-danger">*</span></label>
+                    <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                        <option value="">Seleccionar método...</option>
+                        {% set metodos = ['Efectivo', 'Transferencia', 'Tarjeta Crédito', 'Tarjeta Débito', 'Cheque', 'PSE', 'Otro'] %}
+                        {% for m in metodos %}
+                            <option value="{{ m }}" {% if editando and ingreso and ingreso.metodo_pago == m %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="responsable">Responsable</label>
+                    <input type="text" class="form-control" id="responsable" name="responsable" value="{{ ingreso.responsable if editando and ingreso else '' }}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="observaciones">Observaciones</label>
+                <textarea class="form-control" id="observaciones" name="observaciones" rows="2">{{ ingreso.observaciones if editando and ingreso else '' }}</textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> {% if editando and ingreso %}Actualizar{% else %}Guardar{% endif %}</button>
+                {% if editando and ingreso %}
+                    <a href="{{ url_for('finance.ingresos') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-list"></i> Lista de Ingresos</h3>
+        <span class="badge badge-success">Total: {{ total|currency if total else '$0.00' }}</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Concepto</th>
+                        <th>Categoría</th>
+                        <th>Fecha</th>
+                        <th>Valor</th>
+                        <th>Método Pago</th>
+                        <th>Responsable</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if ingresos %}
+                        {% for i in ingresos %}
+                        <tr>
+                            <td>#{{ i.id }}</td>
+                            <td>{{ i.concepto }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if i.categoria == 'Ventas' %}badge-success
+                                    {% elif i.categoria == 'Servicios' %}badge-info
+                                    {% elif i.categoria == 'Consultoria' %}badge-primary
+                                    {% elif i.categoria == 'Comisiones' %}badge-warning
+                                    {% else %}badge-secondary{% endif %}">
+                                    {{ i.categoria }}
+                                </span>
+                            </td>
+                            <td>{{ i.fecha }}</td>
+                            <td class="text-success fw-bold">{{ i.valor|currency }}</td>
+                            <td>{{ i.metodo_pago }}</td>
+                            <td>{{ i.responsable or '-' }}</td>
+                            <td class="actions-cell">
+                                <a href="{{ url_for('finance.editar_ingreso', id=i.id) }}" class="btn btn-sm btn-warning" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if current_user and current_user.rol == 'ADMIN' %}
+                                <form method="POST" action="{{ url_for('finance.eliminar_ingreso', id=i.id) }}" style="display:inline" onsubmit="return confirm('¿Está seguro?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i><p>No hay ingresos registrados.</p></td></tr>
+                    {% endif %}
+                </tbody>
+                {% if ingresos %}
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-end fw-bold" style="background:var(--success-bg)">Total:</td>
+                        <td class="text-success fw-bold" style="background:var(--success-bg)">{{ total|currency if total else '$0.00' }}</td>
+                        <td colspan="3" style="background:var(--success-bg)"></td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
