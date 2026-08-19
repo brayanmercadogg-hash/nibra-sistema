@@ -82,7 +82,10 @@ def get_db():
     if _is_postgres():
         import psycopg2
         import psycopg2.extras
-        conn = psycopg2.connect(DATABASE_URL)
+        connect_url = DATABASE_URL
+        if 'sslmode' not in connect_url:
+            connect_url += '?sslmode=require' if '?' not in connect_url else '&sslmode=require'
+        conn = psycopg2.connect(connect_url)
         conn.autocommit = False
         conn.cursor_factory = psycopg2.extras.RealDictCursor
         return _PgConnWrapper(conn)
