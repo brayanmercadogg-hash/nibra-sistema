@@ -105,8 +105,13 @@ def forbidden(e):
     return render_template('errors/403.html'), 403
 
 
-init_db()
-seed_admin()
+try:
+    init_db()
+    seed_admin()
+except Exception as e:
+    import traceback
+    print(f"WARNING: DB init failed on startup: {e}")
+    traceback.print_exc()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
