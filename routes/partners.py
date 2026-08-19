@@ -7,6 +7,7 @@ partners_bp = Blueprint('partners', __name__, url_prefix='/socios')
 
 @partners_bp.route('/lista', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def socios():
     db = get_db()
     if request.method == 'POST':
@@ -41,6 +42,7 @@ def socios():
 
 @partners_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def editar_socio(id):
     db = get_db()
     socio = db.execute('SELECT * FROM socios WHERE id = ?', (id,)).fetchone()
@@ -92,6 +94,7 @@ def eliminar_socio(id):
 
 @partners_bp.route('/distribucion')
 @login_required
+@admin_required
 def distribucion():
     db = get_db()
     distribuciones = db.execute('SELECT * FROM distribuciones ORDER BY created_at DESC').fetchall()
@@ -101,6 +104,7 @@ def distribucion():
 
 @partners_bp.route('/calcular', methods=['POST'])
 @login_required
+@admin_required
 def calcular_distribucion():
     db = get_db()
     periodo_inicio = request.form.get('periodo_inicio')
@@ -142,6 +146,7 @@ def calcular_distribucion():
 
 @partners_bp.route('/registrar-pago/<int:distribucion_id>', methods=['POST'])
 @login_required
+@admin_required
 def registrar_pago(distribucion_id):
     db = get_db()
     dist = db.execute('SELECT * FROM distribuciones WHERE id = ?', (distribucion_id,)).fetchone()

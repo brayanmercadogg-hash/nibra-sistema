@@ -47,11 +47,11 @@
                 <tr>
                     <th>Vendedor</th>
                     <th>% Comisión</th>
-                    <th># Ventas</th>
+                    <th class="hide-md"># Ventas</th>
                     <th>Total Vendido</th>
                     <th>Comisión Generada</th>
-                    <th>Comisión Pagada</th>
-                    <th>Comisión Pendiente</th>
+                    <th class="hide-sm">Comisión Pagada</th>
+                    <th class="hide-sm">Comisión Pendiente</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -60,11 +60,11 @@
                 <tr>
                     <td>{{ c.vendedor_nombre }}</td>
                     <td>{{ '%.2f' % c.porcentaje_comision | float }}%</td>
-                    <td>{{ c.ventas_count }}</td>
+                    <td class="hide-md">{{ c.ventas_count }}</td>
                     <td>${{ '%.2f' % c.total_vendido | float }}</td>
                     <td>${{ '%.2f' % c.comision_generada | float }}</td>
-                    <td>${{ '%.2f' % c.comision_pagada | float }}</td>
-                    <td>
+                    <td class="hide-sm">${{ '%.2f' % c.comision_pagada | float }}</td>
+                    <td class="hide-sm">
                         <span class="badge badge-{{ 'danger' if c.comision_pendiente > 0 else 'success' }}">
                             ${{ '%.2f' % c.comision_pendiente | float }}
                         </span>

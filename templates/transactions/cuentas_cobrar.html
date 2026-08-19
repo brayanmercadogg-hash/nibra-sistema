@@ -34,9 +34,9 @@
                         <th>Cliente</th>
                         <th>Venta ID</th>
                         <th>Total</th>
-                        <th>Pagado</th>
-                        <th>Saldo</th>
-                        <th>Estado</th>
+                        <th class="hide-sm">Pagado</th>
+                        <th class="hide-sm">Saldo</th>
+                        <th class="hide-md">Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -52,11 +52,11 @@
                                 {% else %}-{% endif %}
                             </td>
                             <td class="fw-bold">{{ cc.total|currency }}</td>
-                            <td class="text-success">{{ cc.pagado|currency }}</td>
-                            <td class="{% if cc.saldo > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+                            <td class="text-success hide-sm">{{ cc.pagado|currency }}</td>
+                            <td class="{% if cc.saldo > 0 %}text-danger{% else %}text-success{% endif %} fw-bold hide-sm">
                                 {{ cc.saldo|currency }}
                             </td>
-                            <td>
+                            <td class="hide-md">
                                 {% set estado = cc.estado if cc.estado else ('PAGADA' if cc.saldo <= 0 else 'PENDIENTE') %}
                                 <span class="badge {% if estado == 'PAGADA' %}badge-success{% else %}badge-warning{% endif %}">
                                     {{ estado }}

@@ -25,6 +25,7 @@
 </head>
 <body>
     <div class="layout">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2 class="sidebar-logo"><i class="fas fa-cube"></i> NIBRA</h2>
@@ -33,11 +34,14 @@
                 </button>
             </div>
             <nav class="sidebar-nav">
+                {% set rol = current_user.rol if current_user else '' %}
+
                 <div class="nav-section-title">Principal</div>
                 <a href="{{ url_for('main.dashboard') }}" class="nav-item {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
                     <i class="fas fa-th-large"></i><span>Dashboard</span>
                 </a>
 
+                {% if rol != 'VENDEDOR' %}
                 <div class="nav-section-title">Inventario</div>
                 <a href="{{ url_for('inventory.productos') }}" class="nav-item {% if request.endpoint and 'producto' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-box"></i><span>Productos</span>
@@ -45,19 +49,24 @@
                 <a href="{{ url_for('inventory.categorias') }}" class="nav-item {% if request.endpoint and 'categor' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-tag"></i><span>Categorías</span>
                 </a>
+                {% endif %}
 
                 <div class="nav-section-title">Contactos</div>
                 <a href="{{ url_for('contacts.clientes') }}" class="nav-item {% if request.endpoint and 'cliente' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-user"></i><span>Clientes</span>
                 </a>
+                {% if rol != 'VENDEDOR' %}
                 <a href="{{ url_for('contacts.proveedores') }}" class="nav-item {% if request.endpoint and 'proveedor' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-truck"></i><span>Proveedores</span>
                 </a>
+                {% endif %}
 
                 <div class="nav-section-title">Transacciones</div>
+                {% if rol != 'VENDEDOR' %}
                 <a href="{{ url_for('transactions.compras_list') }}" class="nav-item {% if request.endpoint and 'compra' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-shopping-cart"></i><span>Compras</span>
                 </a>
+                {% endif %}
                 <a href="{{ url_for('transactions.ventas_list') }}" class="nav-item {% if request.endpoint and 'venta' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-file-invoice"></i><span>Ventas</span>
                 </a>
@@ -65,6 +74,7 @@
                     <i class="fas fa-file-invoice-dollar"></i><span>Cuentas por Cobrar</span>
                 </a>
 
+                {% if rol != 'VENDEDOR' %}
                 <div class="nav-section-title">Finanzas</div>
                 <a href="{{ url_for('finance.gastos') }}" class="nav-item {% if request.endpoint == 'finance.gastos' %}active{% endif %}">
                     <i class="fas fa-arrow-up"></i><span>Gastos</span>
@@ -81,8 +91,10 @@
                 <a href="{{ url_for('finance.utilidades') }}" class="nav-item {% if request.endpoint == 'finance.utilidades' %}active{% endif %}">
                     <i class="fas fa-scale-balanced"></i><span>Utilidades</span>
                 </a>
+                {% endif %}
 
                 <div class="nav-section-title">Equipo</div>
+                {% if rol == 'ADMIN' %}
                 <a href="{{ url_for('partners.socios') }}" class="nav-item {% if request.endpoint and 'socio' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-handshake"></i><span>Socios</span>
                 </a>
@@ -92,15 +104,19 @@
                 <a href="{{ url_for('sales_team.vendedores') }}" class="nav-item {% if request.endpoint == 'sales_team.vendedores' %}active{% endif %}">
                     <i class="fas fa-user-tie"></i><span>Vendedores</span>
                 </a>
+                {% endif %}
                 <a href="{{ url_for('sales_team.comisiones') }}" class="nav-item {% if request.endpoint == 'sales_team.comisiones' %}active{% endif %}">
                     <i class="fas fa-percent"></i><span>Comisiones</span>
                 </a>
 
+                {% if rol != 'VENDEDOR' %}
                 <div class="nav-section-title">Análisis</div>
                 <a href="{{ url_for('reports.index') }}" class="nav-item {% if request.endpoint and 'reporte' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-chart-bar"></i><span>Reportes</span>
                 </a>
-                {% if current_user and current_user.rol == 'ADMIN' %}
+                {% endif %}
+
+                {% if rol == 'ADMIN' %}
                 <a href="{{ url_for('main.usuarios') }}" class="nav-item {% if request.endpoint == 'main.usuarios' %}active{% endif %}">
                     <i class="fas fa-gear"></i><span>Usuarios</span>
                 </a>
@@ -129,7 +145,7 @@
                     <h1>{% block page_title %}{% endblock %}</h1>
                 </div>
                 <div class="navbar-actions">
-                    <a href="{{ url_for('public.catalogo') }}" class="btn btn-outline" target="_blank">
+                    <a href="{{ url_for('public.catalogo') }}" class="btn btn-outline btn-sm" target="_blank">
                         <i class="fas fa-store"></i> Catálogo
                     </a>
                 </div>
@@ -153,13 +169,58 @@
     </div>
 
     <script>
-        document.getElementById('sidebarToggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-            document.getElementById('mainContent').classList.toggle('expanded');
+    (function() {
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebarOverlay');
+        var mainContent = document.getElementById('mainContent');
+        var navbarToggle = document.getElementById('navbarToggle');
+        var sidebarToggle = document.getElementById('sidebarToggle');
+
+        function isMobile() {
+            return window.innerWidth <= 992;
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+        }
+
+        function openSidebar() {
+            sidebar.classList.add('mobile-open');
+            overlay.classList.add('active');
+        }
+
+        sidebarToggle.addEventListener('click', function() {
+            if (isMobile()) {
+                if (sidebar.classList.contains('mobile-open')) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            } else {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            }
         });
-        document.getElementById('navbarToggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('mobile-open');
+
+        navbarToggle.addEventListener('click', function() {
+            if (sidebar.classList.contains('mobile-open')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
         });
+
+        overlay.addEventListener('click', closeSidebar);
+
+        window.addEventListener('resize', function() {
+            if (!isMobile()) {
+                closeSidebar();
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+            }
+        });
+    })();
     </script>
     {% block scripts %}{% endblock %}
 </body>

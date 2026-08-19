@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from database.db import get_db, generar_codigo
-from utils.decorators import login_required
+from utils.decorators import login_required, partner_or_admin_required
 from datetime import datetime
 
 transactions = Blueprint('transactions', __name__, url_prefix='/transacciones')
@@ -8,6 +8,7 @@ transactions = Blueprint('transactions', __name__, url_prefix='/transacciones')
 
 @transactions.route('/compras')
 @login_required
+@partner_or_admin_required
 def compras_list():
     db = get_db()
     compras = db.execute('''
@@ -22,6 +23,7 @@ def compras_list():
 
 @transactions.route('/compras/nueva', methods=['GET'])
 @login_required
+@partner_or_admin_required
 def compra_nueva():
     db = get_db()
     proveedores = db.execute("SELECT * FROM proveedores WHERE estado = 'ACTIVO' ORDER BY nombre").fetchall()
@@ -32,6 +34,7 @@ def compra_nueva():
 
 @transactions.route('/compras/nueva', methods=['POST'])
 @login_required
+@partner_or_admin_required
 def compra_crear():
     data = request.get_json()
     if not data:
@@ -103,6 +106,7 @@ def compra_crear():
 
 @transactions.route('/compras/<int:id>')
 @login_required
+@partner_or_admin_required
 def compra_detalle(id):
     db = get_db()
     compra = db.execute('''
@@ -126,6 +130,7 @@ def compra_detalle(id):
 
 @transactions.route('/compras/editar/<int:id>', methods=['GET'])
 @login_required
+@partner_or_admin_required
 def compra_editar_form(id):
     db = get_db()
     compra = db.execute('SELECT * FROM compras WHERE id = ?', (id,)).fetchone()
@@ -142,6 +147,7 @@ def compra_editar_form(id):
 
 @transactions.route('/compras/editar/<int:id>', methods=['POST'])
 @login_required
+@partner_or_admin_required
 def compra_editar(id):
     data = request.get_json()
     if not data:

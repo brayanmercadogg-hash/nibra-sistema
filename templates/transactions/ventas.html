@@ -22,11 +22,11 @@
                         <th>Código</th>
                         <th>Fecha</th>
                         <th>Cliente</th>
-                        <th>Vendedor</th>
+                        <th class="hide-md">Vendedor</th>
                         <th>Total</th>
-                        <th>Descuento</th>
-                        <th>Pagado</th>
-                        <th>Saldo</th>
+                        <th class="hide-sm">Descuento</th>
+                        <th class="hide-sm">Pagado</th>
+                        <th class="hide-sm">Saldo</th>
                         <th>Estado</th>
                     </tr>
                 </thead>
@@ -37,11 +37,11 @@
                             <td><span class="fw-bold">{{ v.codigo }}</span></td>
                             <td>{{ v.fecha }}</td>
                             <td>{{ v.cliente_nombre or 'Sin cliente' }}</td>
-                            <td>{{ v.vendedor_nombre or 'Sin vendedor' }}</td>
+                            <td class="hide-md">{{ v.vendedor_nombre or 'Sin vendedor' }}</td>
                             <td class="fw-bold">{{ v.total|currency }}</td>
-                            <td class="text-muted">{{ v.descuento|currency }}</td>
-                            <td class="text-success">{{ v.pagado|currency }}</td>
-                            <td class="{% if v.saldo > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+                            <td class="text-muted hide-sm">{{ v.descuento|currency }}</td>
+                            <td class="text-success hide-sm">{{ v.pagado|currency }}</td>
+                            <td class="{% if v.saldo > 0 %}text-danger{% else %}text-success{% endif %} fw-bold hide-sm">
                                 {{ v.saldo|currency }}
                             </td>
                             <td>

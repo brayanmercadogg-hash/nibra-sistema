@@ -23,9 +23,9 @@
                         <th>Fecha</th>
                         <th>Proveedor</th>
                         <th>Total</th>
-                        <th>Pagado</th>
-                        <th>Saldo</th>
-                        <th>Método Pago</th>
+                        <th class="hide-sm">Pagado</th>
+                        <th class="hide-sm">Saldo</th>
+                        <th class="hide-md">Método Pago</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -37,11 +37,11 @@
                             <td>{{ c.fecha }}</td>
                             <td>{{ c.proveedor_nombre or 'Sin proveedor' }}</td>
                             <td class="fw-bold">{{ c.total|currency }}</td>
-                            <td class="text-success">{{ c.pagado|currency }}</td>
-                            <td class="{% if c.saldo > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+                            <td class="text-success hide-sm">{{ c.pagado|currency }}</td>
+                            <td class="{% if c.saldo > 0 %}text-danger{% else %}text-success{% endif %} fw-bold hide-sm">
                                 {{ c.saldo|currency }}
                             </td>
-                            <td>
+                            <td class="hide-md">
                                 <span class="badge
                                     {% if c.metodo_pago == 'EFECTIVO' %}badge-success
                                     {% elif c.metodo_pago == 'TARJETA' %}badge-primary

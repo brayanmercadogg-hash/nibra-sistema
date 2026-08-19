@@ -64,8 +64,8 @@
 
 <div class="card mb-3">
     <div class="card-body">
-        <form method="GET" action="{{ url_for('contacts.proveedores') }}" class="d-flex" style="gap:8px;">
-            <input type="text" name="search" class="form-control" placeholder="Buscar proveedores..." value="{{ search }}">
+        <form method="GET" action="{{ url_for('contacts.proveedores') }}" class="d-flex gap-2">
+            <input type="text" name="search" class="form-control flex-1" placeholder="Buscar proveedores..." value="{{ search }}">
             <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Buscar</button>
             {% if search %}
             <a href="{{ url_for('contacts.proveedores') }}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Limpiar</a>

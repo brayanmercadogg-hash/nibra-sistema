@@ -112,12 +112,12 @@
                     <tr>
                         <th>Código</th>
                         <th>Nombre</th>
-                        <th>Categoría</th>
-                        <th>Marca</th>
-                        <th>P. Compra</th>
+                        <th class="hide-md">Categoría</th>
+                        <th class="hide-sm">Marca</th>
+                        <th class="hide-sm">P. Compra</th>
                         <th>P. Venta</th>
-                        <th>Margen</th>
-                        <th>Imagen</th>
+                        <th class="hide-sm">Margen</th>
+                        <th class="hide-sm">Imagen</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
@@ -127,12 +127,12 @@
                     <tr>
                         <td><code style="font-size:12px;background:var(--border-light);padding:2px 6px;border-radius:var(--radius-xs)">{{ p.codigo }}</code></td>
                         <td style="font-weight:500">{{ p.nombre }}</td>
-                        <td>{{ p.categoria_nombre or '-' }}</td>
-                        <td>{{ p.marca or '-' }}</td>
-                        <td>{{ p.precio_compra|currency }}</td>
+                        <td class="hide-md">{{ p.categoria_nombre or '-' }}</td>
+                        <td class="hide-sm">{{ p.marca or '-' }}</td>
+                        <td class="hide-sm">{{ p.precio_compra|currency }}</td>
                         <td style="font-weight:500">{{ p.precio_venta|currency }}</td>
-                        <td>{{ "%.1f"|format(p.margen) }}%</td>
-                        <td>
+                        <td class="hide-sm">{{ "%.1f"|format(p.margen) }}%</td>
+                        <td class="hide-sm">
                             {% if p.imagen %}
                             <img src="{{ url_for('static', filename='img/uploads/' + p.imagen) }}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:var(--radius-xs);border:1px solid var(--border)">
                             {% else %}

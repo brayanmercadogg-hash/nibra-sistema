@@ -41,6 +41,8 @@
 .gastos-page .empty-state p { margin: 0; font-size: 0.85rem; }
 .gastos-page .text-danger { color: #dc2626 !important; }
 .gastos-page .actions-cell { white-space: nowrap; }
+@media(max-width:576px){.grid-3{grid-template-columns:1fr}.card-body{padding:16px}.form-grid{grid-template-columns:1fr}}
+@media(max-width:576px){.gastos-page .card-body{padding:1rem}.gastos-page .stat-cards{grid-template-columns:1fr !important}.gastos-page .d-flex{gap:8px !important}.gastos-page .form-grid{grid-template-columns:1fr !important}.gastos-page .btn{padding:0.6rem 1rem;min-height:44px}}
 </style>
 
 <div class="gastos-page">
@@ -148,11 +150,11 @@
                     <tr>
                         <th>ID</th>
                         <th>Concepto</th>
-                        <th>Categoría</th>
+                        <th class="hide-md">Categoría</th>
                         <th>Fecha</th>
                         <th>Valor</th>
-                        <th>Método Pago</th>
-                        <th>Responsable</th>
+                        <th class="hide-sm">Método Pago</th>
+                        <th class="hide-sm">Responsable</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -162,7 +164,7 @@
                         <tr>
                             <td>#{{ g.id }}</td>
                             <td>{{ g.concepto }}</td>
-                            <td>
+                            <td class="hide-md">
                                 <span class="badge
                                     {% if g.categoria == 'Operacion' %}badge-info
                                     {% elif g.categoria == 'Marketing' %}badge-warning
@@ -174,8 +176,8 @@
                             </td>
                             <td>{{ g.fecha }}</td>
                             <td class="text-danger fw-bold">{{ g.valor|currency }}</td>
-                            <td>{{ g.metodo_pago }}</td>
-                            <td>{{ g.responsable or '-' }}</td>
+                            <td class="hide-sm">{{ g.metodo_pago }}</td>
+                            <td class="hide-sm">{{ g.responsable or '-' }}</td>
                             <td class="actions-cell">
                                 <a href="{{ url_for('finance.editar_gasto', id=g.id) }}" class="btn btn-sm btn-warning" title="Editar">
                                     <i class="fas fa-edit"></i>

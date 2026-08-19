@@ -112,6 +112,147 @@ def dashboard():
         (first_of_month,)
     ).fetchall()
 
+    today_date = date.today()
+    if today_date.month == 1:
+        prev_month_start = today_date.replace(year=today_date.year - 1, month=12, day=1).isoformat()
+        prev_month_end = today_date.replace(day=1).isoformat()
+    else:
+        prev_month_start = today_date.replace(month=today_date.month - 1, day=1).isoformat()
+        prev_month_end = today_date.replace(day=1).isoformat()
+
+    ventas_mes_anterior_row = db.execute(
+        "SELECT COALESCE(SUM(total), 0) as total FROM ventas WHERE fecha >= ? AND fecha < ?",
+        (prev_month_start, prev_month_end)
+    ).fetchone()
+    ventas_mes_anterior = ventas_mes_anterior_row['total']
+
+    ingresos_mes_anterior_row = db.execute(
+        "SELECT COALESCE(SUM(valor), 0) as total FROM ingresos WHERE fecha >= ? AND fecha < ?",
+        (prev_month_start, prev_month_end)
+    ).fetchone()
+    ingresos_mes_anterior = ingresos_mes_anterior_row['total']
+
+    gastos_mes_anterior_row = db.execute(
+        "SELECT COALESCE(SUM(valor), 0) as total FROM gastos WHERE fecha >= ? AND fecha < ?",
+        (prev_month_start, prev_month_end)
+    ).fetchone()
+    gastos_mes_anterior = gastos_mes_anterior_row['total']
+
+    same_month_last_year_start = today_date.replace(year=today_date.year - 1, day=1).isoformat()
+    if today_date.month == 12:
+        same_month_last_year_end = today_date.replace(year=today_date.year - 1, month=12 + 1, day=1).isoformat()
+    else:
+        same_month_last_year_end = today_date.replace(year=today_date.year - 1, month=today_date.month + 1, day=1).isoformat()
+
+    ventas_anio_anterior_row = db.execute(
+        "SELECT COALESCE(SUM(total), 0) as total FROM ventas WHERE fecha >= ? AND fecha < ?",
+        (same_month_last_year_start, same_month_last_year_end)
+    ).fetchone()
+    ventas_anio_anterior = ventas_anio_anterior_row['total']
+
+    ingresos_por_dia = []
+    for dow in range(7):
+        day_names_short = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab']
+        ing_row = db.execute(
+            "SELECT COALESCE(SUM(valor), 0) as total FROM ingresos WHERE strftime('%w', fecha) = ? AND fecha >= ?",
+            (str(dow), first_of_month)
+        ).fetchone()
+        ventas_dia_row2 = db.execute(
+            "SELECT COALESCE(SUM(total), 0) as total FROM ventas WHERE strftime('%w', fecha) = ? AND fecha >= ?",
+            (str(dow), first_of_month)
+        ).fetchone()
+        ingresos_por_dia.append({
+            'dia': day_names_short[dow],
+            'ingresos': ing_row['total'],
+            'ventas': ventas_dia_row2['total']
+        })
+
+    gastos_por_categoria = db.execute(
+        "SELECT COALESCE(categoria, 'Sin categoría') as categoria, SUM(valor) as total "
+        "FROM gastos WHERE fecha >= ? GROUP BY categoria ORDER BY total DESC",
+        (first_of_month,)
+    ).fetchall()
+
+    top_vendedores = db.execute(
+        "SELECT ve.nombre, SUM(v.total) as total_ventas, COUNT(v.id) as num_ventas "
+        "FROM ventas v JOIN vendedores ve ON v.vendedor_id = ve.id "
+        "WHERE v.fecha >= ? GROUP BY ve.id, ve.nombre "
+        "ORDER BY total_ventas DESC LIMIT 5",
+        (first_of_month,)
+    ).fetchall()
+
+    socios_activos = db.execute(
+        "SELECT nombre, porcentaje, capital_aportado FROM socios WHERE estado = 'ACTIVO' ORDER BY porcentaje DESC"
+    ).fetchall()
+
+    distribucion_pendiente_row = db.execute(
+        "SELECT COUNT(*) as total FROM distribuciones WHERE estado = 'PENDIENTE'"
+    ).fetchone()
+    distribucion_pendiente = distribucion_pendiente_row['total']
+
+    compras_recientes = db.execute(
+        "SELECT co.*, p.nombre as proveedor_nombre "
+        "FROM compras co LEFT JOIN proveedores p ON co.proveedor_id = p.id "
+        "ORDER BY co.created_at DESC LIMIT 5"
+    ).fetchall()
+
+    cuentas_pendientes_det = db.execute(
+        "SELECT cpc.*, cl.nombre as cliente_nombre "
+        "FROM cuentas_por_cobrar cpc LEFT JOIN clientes cl ON cpc.cliente_id = cl.id "
+        "WHERE cpc.estado = 'PENDIENTE' ORDER BY cpc.created_at DESC LIMIT 5"
+    ).fetchall()
+
+    cuentas_pendientes_count_row = db.execute(
+        "SELECT COUNT(*) as total FROM cuentas_por_cobrar WHERE estado = 'PENDIENTE'"
+    ).fetchone()
+    cuentas_pendientes_count = cuentas_pendientes_count_row['total']
+
+    inversiones_activas_row = db.execute(
+        "SELECT COALESCE(SUM(monto), 0) as total FROM inversiones WHERE estado = 'ACTIVA'"
+    ).fetchone()
+    inversiones_activas_total = inversiones_activas_row['total']
+
+    actividad_reciente = []
+
+    recientes_ventas = db.execute(
+        "SELECT 'venta' as tipo, v.codigo as codigo, v.total as monto, v.fecha as fecha, "
+        "c.nombre as persona, v.created_at as created_at "
+        "FROM ventas v LEFT JOIN clientes c ON v.cliente_id = c.id "
+        "ORDER BY v.created_at DESC LIMIT 5"
+    ).fetchall()
+    for r in recientes_ventas:
+        actividad_reciente.append(dict(r))
+
+    recientes_compras = db.execute(
+        "SELECT 'compra' as tipo, co.codigo as codigo, co.total as monto, co.fecha as fecha, "
+        "p.nombre as persona, co.created_at as created_at "
+        "FROM compras co LEFT JOIN proveedores p ON co.proveedor_id = p.id "
+        "ORDER BY co.created_at DESC LIMIT 5"
+    ).fetchall()
+    for r in recientes_compras:
+        actividad_reciente.append(dict(r))
+
+    recientes_ingresos = db.execute(
+        "SELECT 'ingreso' as tipo, concepto as codigo, valor as monto, fecha, "
+        "responsable as persona, created_at "
+        "FROM ingresos WHERE fecha >= ? ORDER BY created_at DESC LIMIT 5",
+        (first_of_month,)
+    ).fetchall()
+    for r in recientes_ingresos:
+        actividad_reciente.append(dict(r))
+
+    recientes_gastos = db.execute(
+        "SELECT 'gasto' as tipo, concepto as codigo, valor as monto, fecha, "
+        "responsable as persona, created_at "
+        "FROM gastos WHERE fecha >= ? ORDER BY created_at DESC LIMIT 5",
+        (first_of_month,)
+    ).fetchall()
+    for r in recientes_gastos:
+        actividad_reciente.append(dict(r))
+
+    actividad_reciente.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    actividad_reciente = actividad_reciente[:15]
+
     db.close()
 
     return render_template(
@@ -129,7 +270,21 @@ def dashboard():
         total_clientes=total_clientes,
         ventas_recientes=ventas_recientes,
         monthly_sales=monthly_sales,
-        top_products=top_products
+        top_products=top_products,
+        ventas_mes_anterior=ventas_mes_anterior,
+        ingresos_mes_anterior=ingresos_mes_anterior,
+        gastos_mes_anterior=gastos_mes_anterior,
+        ventas_anio_anterior=ventas_anio_anterior,
+        ingresos_por_dia=ingresos_por_dia,
+        gastos_por_categoria=gastos_por_categoria,
+        top_vendedores=top_vendedores,
+        socios_activos=socios_activos,
+        distribucion_pendiente=distribucion_pendiente,
+        compras_recientes=compras_recientes,
+        cuentas_pendientes_det=cuentas_pendientes_det,
+        cuentas_pendientes_count=cuentas_pendientes_count,
+        inversiones_activas_total=inversiones_activas_total,
+        actividad_reciente=actividad_reciente
     )
 
 

@@ -38,6 +38,8 @@
 .inversiones-page .empty-state p { margin: 0; font-size: 0.85rem; }
 .inversiones-page .text-success { color: #16a34a !important; }
 .inversiones-page .actions-cell { white-space: nowrap; }
+@media(max-width:576px){.grid-3{grid-template-columns:1fr}.card-body{padding:16px}.form-grid{grid-template-columns:1fr}}
+@media(max-width:576px){.inversiones-page .card-body{padding:1rem}.inversiones-page .stat-cards{grid-template-columns:1fr !important}.inversiones-page .d-flex{gap:8px !important}.inversiones-page .form-grid{grid-template-columns:1fr !important}.inversiones-page .btn{padding:0.6rem 1rem;min-height:44px}}
 </style>
 
 <div class="inversiones-page">
@@ -118,9 +120,9 @@
                         <th>Inversionista</th>
                         <th>Monto</th>
                         <th>Fecha</th>
-                        <th>Objetivo</th>
-                        <th>Estado</th>
-                        <th>Retorno</th>
+                        <th class="hide-sm">Objetivo</th>
+                        <th class="hide-md">Estado</th>
+                        <th class="hide-sm">Retorno</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -132,14 +134,14 @@
                             <td>{{ inv.inversionista }}</td>
                             <td class="fw-bold">{{ inv.monto|currency }}</td>
                             <td>{{ inv.fecha }}</td>
-                            <td>{{ inv.objetivo or '-' }}</td>
-                            <td>
+                            <td class="hide-sm">{{ inv.objetivo or '-' }}</td>
+                            <td class="hide-md">
                                 {% if inv.estado == 'ACTIVA' %}<span class="badge badge-success">ACTIVA</span>
                                 {% elif inv.estado == 'CERRADA' %}<span class="badge badge-secondary">CERRADA</span>
                                 {% elif inv.estado == 'CANCELADA' %}<span class="badge badge-danger">CANCELADA</span>
                                 {% else %}<span class="badge badge-secondary">{{ inv.estado }}</span>{% endif %}
                             </td>
-                            <td class="text-success fw-bold">{{ inv.retorno|currency if inv.retorno else '$0.00' }}</td>
+                            <td class="text-success fw-bold hide-sm">{{ inv.retorno|currency if inv.retorno else '$0.00' }}</td>
                             <td class="actions-cell">
                                 <a href="{{ url_for('finance.editar_inversion', id=inv.id) }}" class="btn btn-sm btn-warning" title="Editar"><i class="fas fa-edit"></i></a>
                                 {% if current_user and current_user.rol == 'ADMIN' %}

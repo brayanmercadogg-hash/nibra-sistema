@@ -4,332 +4,137 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<style>
-    .dash-welcome {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 36px;
-        padding-bottom: 24px;
-        border-bottom: 1px solid #e5e5e5;
-    }
-    .dash-welcome-text h2 {
-        margin: 0 0 2px 0;
-        font-size: 1.4rem;
-        font-weight: 600;
-        color: #0a0a0a;
-        letter-spacing: -0.02em;
-    }
-    .dash-welcome-text p {
-        margin: 0;
-        font-size: 0.85rem;
-        color: #737373;
-        font-weight: 400;
-    }
-    .dash-welcome-icon {
-        font-size: 1.5rem;
-        color: #d4d4d4;
-    }
-    .dash-stat-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 14px;
-        margin-bottom: 32px;
-    }
-    .dash-stat-card {
-        background: #fff;
-        border-radius: 10px;
-        border: 1px solid #e5e5e5;
-        padding: 20px 22px;
-        display: flex;
-        align-items: flex-start;
-        gap: 16px;
-        transition: border-color 0.15s ease;
-    }
-    .dash-stat-card:hover {
-        border-color: #d4d4d4;
-    }
-    .dash-stat-icon {
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.85rem;
-        flex-shrink: 0;
-        margin-top: 2px;
-    }
-    .dash-stat-body {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        gap: 4px;
-    }
-    .dash-stat-body .label {
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #a3a3a3;
-        margin: 0;
-    }
-    .dash-stat-body .value {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #0a0a0a;
-        margin: 0;
-        letter-spacing: -0.02em;
-        line-height: 1.2;
-    }
-    .dash-charts {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 32px;
-    }
-    @media (max-width: 900px) {
-        .dash-charts { grid-template-columns: 1fr; }
-    }
-    .dash-chart-card {
-        background: #fff;
-        border-radius: 10px;
-        border: 1px solid #e5e5e5;
-        overflow: hidden;
-    }
-    .dash-chart-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 18px 24px;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .dash-chart-header i {
-        color: #a3a3a3;
-        font-size: 0.9rem;
-    }
-    .dash-chart-header h3 {
-        margin: 0;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #171717;
-    }
-    .dash-chart-body {
-        padding: 20px 24px 24px;
-        height: 340px;
-        position: relative;
-    }
-    .dash-table-card {
-        background: #fff;
-        border-radius: 10px;
-        border: 1px solid #e5e5e5;
-        overflow: hidden;
-    }
-    .dash-table-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 18px 24px;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .dash-table-header-left {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .dash-table-header-left i {
-        color: #a3a3a3;
-        font-size: 0.9rem;
-    }
-    .dash-table-header-left h3 {
-        margin: 0;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #171717;
-    }
-    .dash-table-header .btn-ver {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 16px;
-        border-radius: 6px;
-        border: 1px solid #e5e5e5;
-        color: #525252;
-        background: #fff;
-        font-size: 0.78rem;
-        font-weight: 500;
-        text-decoration: none;
-        transition: background 0.15s, color 0.15s, border-color 0.15s;
-    }
-    .dash-table-header .btn-ver:hover {
-        background: #0a0a0a;
-        color: #fff;
-        border-color: #0a0a0a;
-    }
-    .dash-table-body {
-        padding: 0;
-    }
-    .dash-table-body .table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .dash-table-body .table thead th {
-        padding: 11px 24px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #a3a3a3;
-        border-bottom: 1px solid #f0f0f0;
-        background: #fafafa;
-    }
-    .dash-table-body .table tbody td {
-        padding: 13px 24px;
-        font-size: 0.85rem;
-        color: #404040;
-        border-bottom: 1px solid #f5f5f5;
-        vertical-align: middle;
-    }
-    .dash-table-body .table tbody tr:last-child td {
-        border-bottom: none;
-    }
-    .dash-table-body .table tbody tr {
-        transition: background 0.1s;
-    }
-    .dash-table-body .table tbody tr:hover {
-        background: #fafafa;
-    }
-    .dash-badge {
-        display: inline-block;
-        padding: 3px 10px;
-        border-radius: 4px;
-        font-size: 0.68rem;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-    }
-    .dash-badge-success {
-        background: #f5f5f5;
-        color: #171717;
-    }
-    .dash-badge-warning {
-        background: #f5f5f5;
-        color: #737373;
-    }
-</style>
-
 <div class="dash-welcome">
     <div class="dash-welcome-text">
-        <h2>Bienvenido, {{ current_user.username }}</h2>
+        <h2>Bienvenido, {{ current_user.nombre }}</h2>
         <p id="dash-datetime"></p>
     </div>
-    <div class="dash-welcome-icon">
-        <i class="fas fa-th-large"></i>
-    </div>
-</div>
-
-<div class="dash-stat-grid">
-    <div class="dash-stat-card" style="border-left: 4px solid #3b82f6">
-        <div class="dash-stat-icon" style="color:#3b82f6">
-            <i class="fas fa-shopping-bag"></i>
-        </div>
-        <div class="dash-stat-body">
-            <p class="label">Ventas del Dia</p>
-            <p class="value">{{ ventas_dia|currency }}</p>
-        </div>
-    </div>
-    <div class="dash-stat-card" style="border-left: 4px solid #10b981">
-        <div class="dash-stat-icon" style="color:#10b981">
-            <i class="fas fa-calendar-check"></i>
-        </div>
-        <div class="dash-stat-body">
-            <p class="label">Ventas del Mes</p>
-            <p class="value">{{ ventas_mes|currency }}</p>
-        </div>
-    </div>
-    <div class="dash-stat-card" style="border-left: 4px solid #22c55e">
-        <div class="dash-stat-icon" style="color:#22c55e">
-            <i class="fas fa-arrow-down"></i>
-        </div>
-        <div class="dash-stat-body">
-            <p class="label">Ingresos</p>
-            <p class="value">{{ total_ingresos|currency }}</p>
-        </div>
-    </div>
-    <div class="dash-stat-card" style="border-left: 4px solid #ef4444">
-        <div class="dash-stat-icon" style="color:#ef4444">
-            <i class="fas fa-arrow-up"></i>
-        </div>
-        <div class="dash-stat-body">
-            <p class="label">Gastos</p>
-            <p class="value">{{ total_gastos|currency }}</p>
-        </div>
-    </div>
-    <div class="dash-stat-card" style="border-left: 4px solid #f59e0b">
-        <div class="dash-stat-icon" style="color:#f59e0b">
-            <i class="fas fa-receipt"></i>
-        </div>
-        <div class="dash-stat-body">
-            <p class="label">Costos</p>
-            <p class="value">{{ total_costos|currency }}</p>
-        </div>
-    </div>
-    <div class="dash-stat-card" style="border-left: 4px solid #8b5cf6">
-        <div class="dash-stat-icon" style="color:#8b5cf6">
-            <i class="fas fa-chart-line"></i>
-        </div>
-        <div class="dash-stat-body">
-            <p class="label">Ganancia Bruta</p>
-            <p class="value">{{ ganancia_bruta|currency }}</p>
-        </div>
-    </div>
-    <div class="dash-stat-card" style="border-left: 4px solid #ec4899">
-        <div class="dash-stat-icon" style="color:#ec4899">
-            <i class="fas fa-hand-holding-usd"></i>
-        </div>
-        <div class="dash-stat-body">
-            <p class="label">Ganancia Neta</p>
-            <p class="value">{{ ganancia_neta|currency }}</p>
-        </div>
-    </div>
-    <div class="dash-stat-card" style="border-left: 4px solid #14b8a6">
-        <div class="dash-stat-icon" style="color:#14b8a6">
-            <i class="fas fa-piggy-bank"></i>
-        </div>
-        <div class="dash-stat-body">
-            <p class="label">Capital</p>
-            <p class="value">{{ total_capital|currency }}</p>
-        </div>
-    </div>
-    <div class="dash-stat-card" style="border-left: 4px solid #eab308">
-        <div class="dash-stat-icon" style="color:#eab308">
-            <i class="fas fa-file-invoice-dollar"></i>
-        </div>
-        <div class="dash-stat-body">
-            <p class="label">Cuentas por Cobrar</p>
-            <p class="value">{{ cuentas_pendientes|currency }}</p>
-        </div>
-    </div>
-    <div class="dash-stat-card" style="border-left: 4px solid #06b6d4">
-        <div class="dash-stat-icon" style="color:#06b6d4">
-            <i class="fas fa-box"></i>
-        </div>
-        <div class="dash-stat-body">
-            <p class="label">Productos</p>
-            <p class="value">{{ total_productos }}</p>
-        </div>
-    </div>
-    <div class="dash-stat-card" style="border-left: 4px solid #84cc16">
-        <div class="dash-stat-icon" style="color:#84cc16">
-            <i class="fas fa-users"></i>
-        </div>
-        <div class="dash-stat-body">
-            <p class="label">Clientes</p>
-            <p class="value">{{ total_clientes }}</p>
+    <div class="dash-welcome-right">
+        <span class="dash-welcome-role">{{ current_user.rol }}</span>
+        <div class="dash-welcome-icon">
+            <i class="fas fa-chart-pie"></i>
         </div>
     </div>
 </div>
 
-<div class="dash-charts">
+<div class="dash-section-title"><i class="fas fa-chart-line"></i> Resumen del Mes</div>
+<div class="dash-kpi-grid">
+    {% set trend_ventas = ((ventas_mes - ventas_mes_anterior) / ventas_mes_anterior * 100) if ventas_mes_anterior > 0 else 0 %}
+    <div class="dash-kpi-card">
+        <div class="dash-kpi-top">
+            <div class="dash-kpi-icon blue"><i class="fas fa-shopping-bag"></i></div>
+            {% if ventas_mes_anterior > 0 %}
+                {% if trend_ventas >= 0 %}
+                    <span class="dash-kpi-trend up"><i class="fas fa-arrow-up"></i> {{ trend_ventas|round(1) }}%</span>
+                {% else %}
+                    <span class="dash-kpi-trend down"><i class="fas fa-arrow-down"></i> {{ (trend_ventas*-1)|round(1) }}%</span>
+                {% endif %}
+            {% else %}
+                <span class="dash-kpi-trend neutral">--</span>
+            {% endif %}
+        </div>
+        <div class="dash-kpi-value">{{ ventas_mes|currency }}</div>
+        <div class="dash-kpi-label">Ventas del Mes</div>
+        <div class="dash-kpi-sub">Hoy: {{ ventas_dia|currency }}</div>
+    </div>
+
+    {% set trend_ingresos = ((total_ingresos - ingresos_mes_anterior) / ingresos_mes_anterior * 100) if ingresos_mes_anterior > 0 else 0 %}
+    <div class="dash-kpi-card">
+        <div class="dash-kpi-top">
+            <div class="dash-kpi-icon green"><i class="fas fa-arrow-down"></i></div>
+            {% if ingresos_mes_anterior > 0 %}
+                {% if trend_ingresos >= 0 %}
+                    <span class="dash-kpi-trend up"><i class="fas fa-arrow-up"></i> {{ trend_ingresos|round(1) }}%</span>
+                {% else %}
+                    <span class="dash-kpi-trend down"><i class="fas fa-arrow-down"></i> {{ (trend_ingresos*-1)|round(1) }}%</span>
+                {% endif %}
+            {% else %}
+                <span class="dash-kpi-trend neutral">--</span>
+            {% endif %}
+        </div>
+        <div class="dash-kpi-value">{{ total_ingresos|currency }}</div>
+        <div class="dash-kpi-label">Ingresos</div>
+    </div>
+
+    {% set trend_gastos = ((total_gastos - gastos_mes_anterior) / gastos_mes_anterior * 100) if gastos_mes_anterior > 0 else 0 %}
+    <div class="dash-kpi-card">
+        <div class="dash-kpi-top">
+            <div class="dash-kpi-icon red"><i class="fas fa-arrow-up"></i></div>
+            {% if gastos_mes_anterior > 0 %}
+                {% if trend_gastos <= 0 %}
+                    <span class="dash-kpi-trend up"><i class="fas fa-arrow-down"></i> {{ (trend_gastos*-1)|round(1) }}%</span>
+                {% else %}
+                    <span class="dash-kpi-trend down"><i class="fas fa-arrow-up"></i> {{ trend_gastos|round(1) }}%</span>
+                {% endif %}
+            {% else %}
+                <span class="dash-kpi-trend neutral">--</span>
+            {% endif %}
+        </div>
+        <div class="dash-kpi-value">{{ total_gastos|currency }}</div>
+        <div class="dash-kpi-label">Gastos</div>
+    </div>
+
+    {% set ganancia_anterior = ingresos_mes_anterior - gastos_mes_anterior %}
+    {% set trend_ganancia = ((ganancia_neta - ganancia_anterior) / ganancia_anterior * 100) if ganancia_anterior > 0 else 0 %}
+    <div class="dash-kpi-card">
+        <div class="dash-kpi-top">
+            <div class="dash-kpi-icon purple"><i class="fas fa-hand-holding-usd"></i></div>
+            {% if ganancia_anterior > 0 %}
+                {% if trend_ganancia >= 0 %}
+                    <span class="dash-kpi-trend up"><i class="fas fa-arrow-up"></i> {{ trend_ganancia|round(1) }}%</span>
+                {% else %}
+                    <span class="dash-kpi-trend down"><i class="fas fa-arrow-down"></i> {{ (trend_ganancia*-1)|round(1) }}%</span>
+                {% endif %}
+            {% else %}
+                <span class="dash-kpi-trend neutral">--</span>
+            {% endif %}
+        </div>
+        <div class="dash-kpi-value">{{ ganancia_neta|currency }}</div>
+        <div class="dash-kpi-label">Ganancia Neta</div>
+        <div class="dash-kpi-sub">Bruta: {{ ganancia_bruta|currency }}</div>
+    </div>
+</div>
+
+<div class="dash-kpi-row2">
+    <div class="dash-kpi-sm">
+        <div class="dash-kpi-sm-top">
+            <div class="dash-kpi-sm-icon teal"><i class="fas fa-piggy-bank"></i></div>
+        </div>
+        <div class="dash-kpi-sm-label">Capital Total</div>
+        <div class="dash-kpi-sm-value">{{ total_capital|currency }}</div>
+    </div>
+    <div class="dash-kpi-sm">
+        <div class="dash-kpi-sm-top">
+            <div class="dash-kpi-sm-icon yellow"><i class="fas fa-file-invoice-dollar"></i></div>
+        </div>
+        <div class="dash-kpi-sm-label">Cuentas por Cobrar</div>
+        <div class="dash-kpi-sm-value">{{ cuentas_pendientes|currency }}</div>
+    </div>
+    <div class="dash-kpi-sm">
+        <div class="dash-kpi-sm-top">
+            <div class="dash-kpi-sm-icon cyan"><i class="fas fa-box"></i></div>
+        </div>
+        <div class="dash-kpi-sm-label">Productos Activos</div>
+        <div class="dash-kpi-sm-value">{{ total_productos }}</div>
+    </div>
+    <div class="dash-kpi-sm">
+        <div class="dash-kpi-sm-top">
+            <div class="dash-kpi-sm-icon lime"><i class="fas fa-users"></i></div>
+        </div>
+        <div class="dash-kpi-sm-label">Clientes Activos</div>
+        <div class="dash-kpi-sm-value">{{ total_clientes }}</div>
+    </div>
+    <div class="dash-kpi-sm">
+        <div class="dash-kpi-sm-top">
+            <div class="dash-kpi-sm-icon orange"><i class="fas fa-chart-line"></i></div>
+        </div>
+        <div class="dash-kpi-sm-label">Inversiones Activas</div>
+        <div class="dash-kpi-sm-value">{{ inversiones_activas_total|currency }}</div>
+    </div>
+</div>
+
+<div class="dash-section-title"><i class="fas fa-chart-bar"></i> Analisis Visual</div>
+<div class="dash-charts-grid">
     <div class="dash-chart-card">
         <div class="dash-chart-header">
             <i class="fas fa-chart-bar"></i>
@@ -341,6 +146,33 @@
     </div>
     <div class="dash-chart-card">
         <div class="dash-chart-header">
+            <i class="fas fa-scale-unbalanced"></i>
+            <h3>Comparativa Anual (Mismo Mes)</h3>
+        </div>
+        <div class="dash-chart-body">
+            <canvas id="annualCompareChart"></canvas>
+        </div>
+    </div>
+    <div class="dash-chart-card">
+        <div class="dash-chart-header">
+            <i class="fas fa-arrow-trend-up"></i>
+            <h3>Ingresos vs Gastos</h3>
+        </div>
+        <div class="dash-chart-body">
+            <canvas id="incomeExpenseChart"></canvas>
+        </div>
+    </div>
+    <div class="dash-chart-card">
+        <div class="dash-chart-header">
+            <i class="fas fa-calendar-day"></i>
+            <h3>Ingresos por Dia de la Semana</h3>
+        </div>
+        <div class="dash-chart-body">
+            <canvas id="dayOfWeekChart"></canvas>
+        </div>
+    </div>
+    <div class="dash-chart-card">
+        <div class="dash-chart-header">
             <i class="fas fa-chart-pie"></i>
             <h3>Top Productos</h3>
         </div>
@@ -348,56 +180,273 @@
             <canvas id="topProductsChart"></canvas>
         </div>
     </div>
+    <div class="dash-chart-card">
+        <div class="dash-chart-header">
+            <i class="fas fa-receipt"></i>
+            <h3>Gastos por Categoria</h3>
+        </div>
+        <div class="dash-chart-body">
+            <canvas id="expenseCategoryChart"></canvas>
+        </div>
+    </div>
 </div>
 
-<div class="dash-table-card">
-    <div class="dash-table-header">
-        <div class="dash-table-header-left">
-            <i class="fas fa-receipt"></i>
-            <h3>Ventas Recientes</h3>
+<div class="dash-section-title"><i class="fas fa-table"></i> Datos Detallados</div>
+<div class="dash-data-grid">
+    <div class="dash-table-card">
+        <div class="dash-table-header">
+            <div class="dash-table-header-left">
+                <i class="fas fa-receipt"></i>
+                <h3>Ventas Recientes</h3>
+            </div>
+            <a href="{{ url_for('transactions.ventas_list') }}" class="btn-ver">
+                <i class="fas fa-arrow-right" style="font-size:0.68rem"></i> Ver todas
+            </a>
         </div>
-        <a href="{{ url_for('transactions.ventas_list') }}" class="btn-ver">
-            <i class="fas fa-arrow-right" style="font-size:0.72rem"></i> Ver todas
-        </a>
+        <div class="dash-table-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Codigo</th>
+                            <th>Cliente</th>
+                            <th>Vendedor</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set avatar_colors = ['blue','green','purple','pink','orange','teal','red'] %}
+                        {% for venta in ventas_recientes %}
+                        <tr>
+                            <td style="font-weight:600;color:var(--text)">#{{ venta.codigo or venta.id }}</td>
+                            <td>
+                                <div class="dash-person">
+                                    <span class="dash-avatar {{ avatar_colors[loop.index0 % 7] }}">{{ (venta.cliente_nombre or 'N')[0] }}</span>
+                                    {{ venta.cliente_nombre or 'N/A' }}
+                                </div>
+                            </td>
+                            <td>{{ venta.vendedor_nombre or 'N/A' }}</td>
+                            <td style="font-weight:700;color:var(--text)">{{ venta.total|currency }}</td>
+                            <td>
+                                {% if venta.saldo <= 0 %}
+                                    <span class="dash-badge dash-badge-success">Pagada</span>
+                                {% else %}
+                                    <span class="dash-badge dash-badge-warning">Pendiente</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not ventas_recientes %}
+                        <tr>
+                            <td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px 0">
+                                <i class="fas fa-inbox" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.3"></i>
+                                No hay ventas registradas
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-    <div class="dash-table-body">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Fecha</th>
-                        <th>Cliente</th>
-                        <th>Vendedor</th>
-                        <th>Total</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for venta in ventas_recientes %}
-                    <tr>
-                        <td>#{{ venta.id }}</td>
-                        <td>{{ venta.fecha }}</td>
-                        <td>{{ venta.cliente_nombre or 'N/A' }}</td>
-                        <td>{{ venta.vendedor_nombre or 'N/A' }}</td>
-                        <td style="font-weight:700;color:#0a0a0a">{{ venta.total|currency }}</td>
-                        <td>
-                            {% if venta.saldo <= 0 %}
-                                <span class="dash-badge dash-badge-success">PAGADA</span>
-                            {% else %}
-                                <span class="dash-badge dash-badge-warning">PENDIENTE</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% if not ventas_recientes %}
-                    <tr>
-                        <td colspan="6" style="text-align:center;color:#a3a3a3;padding:32px 0">No hay ventas registradas</td>
-                    </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+
+    <div class="dash-table-card">
+        <div class="dash-table-header">
+            <div class="dash-table-header-left">
+                <i class="fas fa-user-tie"></i>
+                <h3>Top Vendedores</h3>
+            </div>
         </div>
+        <div class="dash-ranking-list">
+            {% set max_venta = top_vendedores[0].total_ventas if top_vendedores else 1 %}
+            {% set rank_colors = ['gold','silver','bronze','normal','normal'] %}
+            {% for v in top_vendedores %}
+            <div class="dash-ranking-item">
+                <span class="dash-ranking-pos {{ rank_colors[loop.index0] }}">{{ loop.index }}</span>
+                <div class="dash-ranking-info">
+                    <div class="dash-ranking-name">{{ v.nombre }}</div>
+                    <div class="dash-ranking-meta">{{ v.num_ventas }} venta{{ 's' if v.num_ventas != 1 }}</div>
+                </div>
+                <div class="dash-ranking-bar-track">
+                    <div class="dash-ranking-bar-fill" style="width:{{ (v.total_ventas / max_venta * 100)|round }}%"></div>
+                </div>
+                <span class="dash-ranking-amount">{{ v.total_ventas|currency }}</span>
+            </div>
+            {% endfor %}
+            {% if not top_vendedores %}
+            <div style="text-align:center;color:var(--text-muted);padding:32px 20px;font-size:0.8rem">
+                <i class="fas fa-user-tie" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.3"></i>
+                Sin datos de vendedores
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="dash-table-card">
+        <div class="dash-table-header">
+            <div class="dash-table-header-left">
+                <i class="fas fa-clock-rotate-left"></i>
+                <h3>Actividad Reciente</h3>
+            </div>
+        </div>
+        <div class="dash-activity-feed">
+            {% set tipo_iconos = {'venta':'fa-file-invoice','compra':'fa-shopping-cart','ingreso':'fa-arrow-down','gasto':'fa-arrow-up'} %}
+            {% set tipo_labels = {'venta':'Venta','compra':'Compra','ingreso':'Ingreso','gasto':'Gasto'} %}
+            {% for act in actividad_reciente %}
+            <div class="dash-activity-item">
+                <div class="dash-activity-icon {{ act.tipo }}">
+                    <i class="fas {{ tipo_iconos.get(act.tipo, 'fa-circle') }}"></i>
+                </div>
+                <div class="dash-activity-body">
+                    <div class="dash-activity-text">
+                        <strong>{{ tipo_labels.get(act.tipo, act.tipo) }}</strong>
+                        {% if act.persona %} — {{ act.persona }}{% endif %}
+                    </div>
+                    <div class="dash-activity-time">{{ act.fecha }}</div>
+                </div>
+                <span class="dash-activity-amount">{{ act.monto|currency }}</span>
+            </div>
+            {% endfor %}
+            {% if not actividad_reciente %}
+            <div style="text-align:center;color:var(--text-muted);padding:32px 20px;font-size:0.8rem">
+                <i class="fas fa-clock" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.3"></i>
+                Sin actividad reciente
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="dash-section-title"><i class="fas fa-layer-group"></i> Mas Informacion</div>
+<div class="dash-bottom-grid">
+    <div class="dash-table-card">
+        <div class="dash-table-header">
+            <div class="dash-table-header-left">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>Compras Recientes</h3>
+            </div>
+            <a href="{{ url_for('transactions.compras_list') }}" class="btn-ver">
+                <i class="fas fa-arrow-right" style="font-size:0.68rem"></i> Ver todas
+            </a>
+        </div>
+        <div class="dash-table-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Codigo</th>
+                            <th>Proveedor</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for compra in compras_recientes %}
+                        <tr>
+                            <td style="font-weight:600;color:var(--text)">#{{ compra.codigo or compra.id }}</td>
+                            <td>{{ compra.proveedor_nombre or 'N/A' }}</td>
+                            <td style="font-weight:700;color:var(--text)">{{ compra.total|currency }}</td>
+                            <td>
+                                {% if compra.saldo <= 0 %}
+                                    <span class="dash-badge dash-badge-success">Pagada</span>
+                                {% else %}
+                                    <span class="dash-badge dash-badge-warning">Pendiente</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not compras_recientes %}
+                        <tr>
+                            <td colspan="4" style="text-align:center;color:var(--text-muted);padding:28px 0;font-size:0.8rem">
+                                No hay compras registradas
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-table-card">
+        <div class="dash-table-header">
+            <div class="dash-table-header-left">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <h3>Cuentas Pendientes</h3>
+            </div>
+            <a href="{{ url_for('transactions.cuentas_cobrar_list') }}" class="btn-ver">
+                <i class="fas fa-arrow-right" style="font-size:0.68rem"></i> Ver todas
+            </a>
+        </div>
+        <div class="dash-table-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cta in cuentas_pendientes_det %}
+                        <tr>
+                            <td style="font-weight:500">{{ cta.cliente_nombre or 'N/A' }}</td>
+                            <td>{{ cta.total|currency }}</td>
+                            <td style="font-weight:700;color:var(--danger)">{{ cta.saldo|currency }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% if not cuentas_pendientes_det %}
+                        <tr>
+                            <td colspan="3" style="text-align:center;color:var(--text-muted);padding:28px 0;font-size:0.8rem">
+                                No hay cuentas pendientes
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-table-card">
+        <div class="dash-table-header">
+            <div class="dash-table-header-left">
+                <i class="fas fa-handshake"></i>
+                <h3>Socios</h3>
+            </div>
+            {% if distribucion_pendiente > 0 %}
+                <span class="dash-badge dash-badge-warning">{{ distribucion_pendiente }} pendiente{{ 's' if distribucion_pendiente != 1 }}</span>
+            {% else %}
+                <span class="dash-badge dash-badge-success">Al dia</span>
+            {% endif %}
+        </div>
+        <div class="dash-socios-list">
+            {% set socio_colors = ['#09090b','#374151','#1f2937','#4b5563','#6b7280'] %}
+            {% for socio in socios_activos %}
+            <div class="dash-socio-item">
+                <div class="dash-socio-avatar" style="background:{{ socio_colors[loop.index0 % 5] }}">{{ socio.nombre[0] }}</div>
+                <div class="dash-socio-info">
+                    <div class="dash-socio-name">{{ socio.nombre }}</div>
+                    <div class="dash-socio-meta">Capital: {{ socio.capital_aportado|currency }}</div>
+                </div>
+                <span class="dash-socio-pct">{{ socio.porcentaje }}%</span>
+            </div>
+            {% endfor %}
+            {% if not socios_activos %}
+            <div style="text-align:center;color:var(--text-muted);padding:32px 20px;font-size:0.8rem">
+                <i class="fas fa-handshake" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.3"></i>
+                No hay socios registrados
+            </div>
+            {% endif %}
+        </div>
+        {% if socios_activos %}
+        <div class="dash-socios-footer">
+            <span class="dash-socios-footer-label">Total Socios</span>
+            <span class="dash-socios-footer-value">{{ socios_activos|length }} socio{{ 's' if socios_activos|length != 1 }}</span>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
@@ -413,6 +462,20 @@
             el.textContent = dayNames[now.getDay()] + ', ' + now.getDate() + ' de ' + monthNames[now.getMonth()] + ' ' + now.getFullYear() + ' — ' + now.toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'});
         }
     })();
+
+    const chartDefaults = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            tooltip: {
+                backgroundColor: '#1e293b',
+                titleColor: '#fff',
+                bodyColor: '#cbd5e1',
+                cornerRadius: 8,
+                padding: 12
+            }
+        }
+    };
 
     const monthlyLabels = [{% for s in monthly_sales %}'{{ s.month }}'{% if not loop.last %},{% endif %}{% endfor %}];
     const monthlyData = [{% for s in monthly_sales %}{{ s.total }}{% if not loop.last %},{% endif %}{% endfor %}];
@@ -432,16 +495,12 @@
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            ...chartDefaults,
             plugins: {
+                ...chartDefaults.plugins,
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1e293b',
-                    titleColor: '#fff',
-                    bodyColor: '#cbd5e1',
-                    cornerRadius: 8,
-                    padding: 12,
+                    ...chartDefaults.plugins.tooltip,
                     callbacks: {
                         label: function(ctx) {
                             return '$' + ctx.parsed.y.toLocaleString('es', {minimumFractionDigits: 2});
@@ -469,9 +528,225 @@
         }
     });
 
-    const productLabels = [{% for p in top_products %}'{{ p.nombre_producto }}'{% if not loop.last %},{% endif %}{% endfor %}];
-    const productData = [{% for p in top_products %}{{ p.cantidad_vendida }}{% if not loop.last %},{% endif %}{% endfor %}];
-    const productColors = ['#5b4dc7','#10b981','#f59e0b','#ef4444','#3b82f6','#ec4899','#14b8a6'];
+    var currentMonthSales = {{ ventas_mes }};
+    var lastYearSales = {{ ventas_anio_anterior }};
+    var currentMonthLabel = monthNames[new Date().getMonth()];
+    var lastYearLabel = 'Mismo mes ' + (new Date().getFullYear() - 1);
+
+    new Chart(document.getElementById('annualCompareChart'), {
+        type: 'bar',
+        data: {
+            labels: [currentMonthLabel, lastYearLabel],
+            datasets: [{
+                label: 'Ventas',
+                data: [currentMonthSales, lastYearSales],
+                backgroundColor: ['rgba(91, 77, 199, 0.8)', 'rgba(209, 213, 219, 0.6)'],
+                borderColor: ['rgba(91, 77, 199, 1)', 'rgba(209, 213, 219, 1)'],
+                borderWidth: 1,
+                borderRadius: 6,
+                barThickness: 60
+            }]
+        },
+        options: {
+            ...chartDefaults,
+            plugins: {
+                ...chartDefaults.plugins,
+                legend: { display: false },
+                tooltip: {
+                    ...chartDefaults.plugins.tooltip,
+                    callbacks: {
+                        label: function(ctx) {
+                            return '$' + ctx.parsed.y.toLocaleString('es', {minimumFractionDigits: 2});
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(v) { return '$' + v.toLocaleString(); },
+                        color: '#94a3b8',
+                        font: { size: 11, weight: '500' }
+                    },
+                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    border: { display: false }
+                },
+                x: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: { color: '#94a3b8', font: { size: 11, weight: '500' } }
+                }
+            }
+        }
+    });
+
+    var incomeExpenseLabels = monthlyLabels;
+    var incomeData = [];
+    var expenseData = [];
+
+    (function() {
+        var incomeByMonth = {};
+        var expenseByMonth = {};
+        {% for s in monthly_sales %}
+            incomeByMonth['{{ s.month }}'] = 0;
+            expenseByMonth['{{ s.month }}'] = 0;
+        {% endfor %}
+
+        var monthLabels = [{% for s in monthly_sales %}'{{ s.month }}'{% if not loop.last %},{% endif %}{% endfor %}];
+        for (var i = 0; i < monthLabels.length; i++) {
+            incomeData.push(0);
+            expenseData.push(0);
+        }
+    })();
+
+    var incomeExpenseLabelsFinal = monthlyLabels;
+    var incomeExpenseData1 = [{% for s in monthly_sales %}0{% if not loop.last %},{% endif %}{% endfor %}];
+    var incomeExpenseData2 = [{% for s in monthly_sales %}0{% if not loop.last %},{% endif %}{% endfor %}];
+    incomeExpenseData1[0] = {{ total_ingresos }};
+    incomeExpenseData2[0] = {{ total_gastos }};
+
+    new Chart(document.getElementById('incomeExpenseChart'), {
+        type: 'line',
+        data: {
+            labels: incomeExpenseLabelsFinal,
+            datasets: [
+                {
+                    label: 'Ingresos',
+                    data: incomeExpenseData1,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                    borderWidth: 2.5,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#10b981',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Gastos',
+                    data: incomeExpenseData2,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                    borderWidth: 2.5,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#ef4444',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }
+            ]
+        },
+        options: {
+            ...chartDefaults,
+            plugins: {
+                ...chartDefaults.plugins,
+                legend: {
+                    position: 'top',
+                    align: 'end',
+                    labels: { padding: 16, usePointStyle: true, pointStyleWidth: 8, font: { size: 12, weight: '500' } }
+                },
+                tooltip: {
+                    ...chartDefaults.plugins.tooltip,
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('es', {minimumFractionDigits: 2});
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(v) { return '$' + v.toLocaleString(); },
+                        color: '#94a3b8',
+                        font: { size: 11, weight: '500' }
+                    },
+                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    border: { display: false }
+                },
+                x: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: { color: '#94a3b8', font: { size: 11, weight: '500' } }
+                }
+            }
+        }
+    });
+
+    var dowLabels = [{% for d in ingresos_por_dia %}'{{ d.dia }}'{% if not loop.last %},{% endif %}{% endfor %}];
+    var dowVentas = [{% for d in ingresos_por_dia %}{{ d.ventas }}{% if not loop.last %},{% endif %}{% endfor %}];
+    var dowIngresos = [{% for d in ingresos_por_dia %}{{ d.ingresos }}{% if not loop.last %},{% endif %}{% endfor %}];
+
+    new Chart(document.getElementById('dayOfWeekChart'), {
+        type: 'bar',
+        data: {
+            labels: dowLabels,
+            datasets: [
+                {
+                    label: 'Ventas',
+                    data: dowVentas,
+                    backgroundColor: 'rgba(91, 77, 199, 0.7)',
+                    borderColor: 'rgba(91, 77, 199, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                },
+                {
+                    label: 'Ingresos',
+                    data: dowIngresos,
+                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            ...chartDefaults,
+            plugins: {
+                ...chartDefaults.plugins,
+                legend: {
+                    position: 'top',
+                    align: 'end',
+                    labels: { padding: 16, usePointStyle: true, pointStyleWidth: 8, font: { size: 12, weight: '500' } }
+                },
+                tooltip: {
+                    ...chartDefaults.plugins.tooltip,
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('es', {minimumFractionDigits: 2});
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(v) { return '$' + v.toLocaleString(); },
+                        color: '#94a3b8',
+                        font: { size: 11, weight: '500' }
+                    },
+                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    border: { display: false }
+                },
+                x: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: { color: '#94a3b8', font: { size: 11, weight: '500' } }
+                }
+            }
+        }
+    });
+
+    var productLabels = [{% for p in top_products %}'{{ p.nombre_producto }}'{% if not loop.last %},{% endif %}{% endfor %}];
+    var productData = [{% for p in top_products %}{{ p.cantidad_vendida }}{% if not loop.last %},{% endif %}{% endfor %}];
+    var productColors = ['#5b4dc7','#10b981','#f59e0b','#ef4444','#3b82f6','#ec4899','#14b8a6'];
 
     new Chart(document.getElementById('topProductsChart'), {
         type: 'doughnut',
@@ -495,11 +770,64 @@
                     labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10, font: { size: 12, weight: '500' } }
                 },
                 tooltip: {
-                    backgroundColor: '#1e293b',
-                    titleColor: '#fff',
-                    bodyColor: '#cbd5e1',
-                    cornerRadius: 8,
-                    padding: 12
+                    ...chartDefaults.plugins.tooltip,
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.label + ': ' + ctx.parsed + ' unidades';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    var expCatLabels = [{% for g in gastos_por_categoria %}'{{ g.categoria }}'{% if not loop.last %},{% endif %}{% endfor %}];
+    var expCatData = [{% for g in gastos_por_categoria %}{{ g.total }}{% if not loop.last %},{% endif %}{% endfor %}];
+    var expCatColors = ['#ef4444','#f59e0b','#3b82f6','#8b5cf6','#ec4899','#10b981','#06b6d4','#84cc16'];
+
+    new Chart(document.getElementById('expenseCategoryChart'), {
+        type: 'bar',
+        data: {
+            labels: expCatLabels,
+            datasets: [{
+                label: 'Gastos',
+                data: expCatData,
+                backgroundColor: expCatColors.slice(0, expCatLabels.length),
+                borderWidth: 0,
+                borderRadius: 4,
+                barThickness: 24
+            }]
+        },
+        options: {
+            ...chartDefaults,
+            indexAxis: 'y',
+            plugins: {
+                ...chartDefaults.plugins,
+                legend: { display: false },
+                tooltip: {
+                    ...chartDefaults.plugins.tooltip,
+                    callbacks: {
+                        label: function(ctx) {
+                            return '$' + ctx.parsed.x.toLocaleString('es', {minimumFractionDigits: 2});
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(v) { return '$' + v.toLocaleString(); },
+                        color: '#94a3b8',
+                        font: { size: 11, weight: '500' }
+                    },
+                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    border: { display: false }
+                },
+                y: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: { color: '#94a3b8', font: { size: 11, weight: '500' } }
                 }
             }
         }

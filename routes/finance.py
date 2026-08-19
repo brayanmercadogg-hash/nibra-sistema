@@ -1,12 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from database.db import get_db, generar_codigo
-from utils.decorators import login_required, admin_required
+from utils.decorators import login_required, admin_required, partner_or_admin_required
 
 finance = Blueprint('finance', __name__, url_prefix='/finanzas')
 
 
 @finance.route('/gastos', methods=['GET', 'POST'])
 @login_required
+@partner_or_admin_required
 def gastos():
     db = get_db()
     if request.method == 'POST':
@@ -64,6 +65,7 @@ def gastos():
 
 @finance.route('/gastos/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
+@partner_or_admin_required
 def editar_gasto(id):
     db = get_db()
 
@@ -127,6 +129,7 @@ def eliminar_gasto(id):
 
 @finance.route('/ingresos', methods=['GET', 'POST'])
 @login_required
+@partner_or_admin_required
 def ingresos():
     db = get_db()
     if request.method == 'POST':
@@ -184,6 +187,7 @@ def ingresos():
 
 @finance.route('/ingresos/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
+@partner_or_admin_required
 def editar_ingreso(id):
     db = get_db()
 
@@ -247,6 +251,7 @@ def eliminar_ingreso(id):
 
 @finance.route('/capital', methods=['GET', 'POST'])
 @login_required
+@partner_or_admin_required
 def capital():
     db = get_db()
     if request.method == 'POST':
@@ -298,6 +303,7 @@ def capital():
 
 @finance.route('/inversiones', methods=['GET', 'POST'])
 @login_required
+@partner_or_admin_required
 def inversiones():
     db = get_db()
     if request.method == 'POST':
@@ -340,6 +346,7 @@ def inversiones():
 
 @finance.route('/inversiones/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
+@partner_or_admin_required
 def editar_inversion(id):
     db = get_db()
 
@@ -403,6 +410,7 @@ def eliminar_inversion(id):
 
 @finance.route('/utilidades')
 @login_required
+@partner_or_admin_required
 def utilidades():
     db = get_db()
     start = request.args.get('start')

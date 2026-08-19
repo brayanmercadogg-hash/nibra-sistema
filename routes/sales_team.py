@@ -7,6 +7,7 @@ sales_team = Blueprint('sales_team', __name__, url_prefix='/equipo-ventas')
 
 @sales_team.route('/vendedores')
 @login_required
+@admin_required
 def vendedores():
     db = get_db()
     vendedores = db.execute("SELECT * FROM vendedores ORDER BY nombre").fetchall()
@@ -15,6 +16,7 @@ def vendedores():
 
 @sales_team.route('/vendedores', methods=['POST'])
 @login_required
+@admin_required
 def vendedor_crear():
     db = get_db()
     nombre = request.form.get('nombre', '').strip()
@@ -44,6 +46,7 @@ def vendedor_crear():
 
 @sales_team.route('/vendedores/editar/<int:id>')
 @login_required
+@admin_required
 def vendedor_editar(id):
     db = get_db()
     vendedor = db.execute("SELECT * FROM vendedores WHERE id = ?", (id,)).fetchone()
@@ -57,6 +60,7 @@ def vendedor_editar(id):
 
 @sales_team.route('/vendedores/editar/<int:id>', methods=['POST'])
 @login_required
+@admin_required
 def vendedor_update(id):
     db = get_db()
     nombre = request.form.get('nombre', '').strip()

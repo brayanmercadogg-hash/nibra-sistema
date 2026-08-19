@@ -41,6 +41,8 @@
 .ingresos-page .empty-state p { margin: 0; font-size: 0.85rem; }
 .ingresos-page .text-success { color: #16a34a !important; }
 .ingresos-page .actions-cell { white-space: nowrap; }
+@media(max-width:576px){.grid-3{grid-template-columns:1fr}.card-body{padding:16px}.form-grid{grid-template-columns:1fr}}
+@media(max-width:576px){.ingresos-page .card-body{padding:1rem}.ingresos-page .stat-cards{grid-template-columns:1fr !important}.ingresos-page .d-flex{gap:8px !important}.ingresos-page .form-grid{grid-template-columns:1fr !important}.ingresos-page .btn{padding:0.6rem 1rem;min-height:44px}}
 </style>
 
 <div class="ingresos-page">
@@ -148,11 +150,11 @@
                     <tr>
                         <th>ID</th>
                         <th>Concepto</th>
-                        <th>Categoría</th>
+                        <th class="hide-md">Categoría</th>
                         <th>Fecha</th>
                         <th>Valor</th>
-                        <th>Método Pago</th>
-                        <th>Responsable</th>
+                        <th class="hide-sm">Método Pago</th>
+                        <th class="hide-sm">Responsable</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -162,7 +164,7 @@
                         <tr>
                             <td>#{{ i.id }}</td>
                             <td>{{ i.concepto }}</td>
-                            <td>
+                            <td class="hide-md">
                                 <span class="badge
                                     {% if i.categoria == 'Ventas' %}badge-success
                                     {% elif i.categoria == 'Servicios' %}badge-info
@@ -174,8 +176,8 @@
                             </td>
                             <td>{{ i.fecha }}</td>
                             <td class="text-success fw-bold">{{ i.valor|currency }}</td>
-                            <td>{{ i.metodo_pago }}</td>
-                            <td>{{ i.responsable or '-' }}</td>
+                            <td class="hide-sm">{{ i.metodo_pago }}</td>
+                            <td class="hide-sm">{{ i.responsable or '-' }}</td>
                             <td class="actions-cell">
                                 <a href="{{ url_for('finance.editar_ingreso', id=i.id) }}" class="btn btn-sm btn-warning" title="Editar">
                                     <i class="fas fa-edit"></i>

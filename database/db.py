@@ -33,6 +33,9 @@ class _PgConnWrapper:
         self._conn = conn
 
     def execute(self, sql, params=None):
+        sql = sql.replace("strftime('%w', fecha)", "EXTRACT(DOW FROM fecha)::INTEGER")
+        sql = sql.replace("strftime('%m', fecha)", "EXTRACT(MONTH FROM fecha)::INTEGER")
+        sql = sql.replace("strftime('%Y', fecha)", "EXTRACT(YEAR FROM fecha)::INTEGER")
         sql = re.sub(r'\?(?!\?)', '%s', sql)
         cur = self._conn.cursor()
         inserted_id = None
