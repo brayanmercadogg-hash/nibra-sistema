@@ -220,15 +220,13 @@ def compra_editar(id):
 def ventas_list():
     db = get_db()
     if session.get('rol') == 'VENDEDOR':
-        # Los vendedores solo ven sus propias ventas
         vend = db.execute(
             "SELECT id FROM vendedores WHERE usuario_id = ? LIMIT 1",
             (session['user_id'],)
         ).fetchone()
         if not vend:
             db.close()
-            flash('Tu usuario no esta vinculado a un perfil de vendedor', 'warning')
-            return redirect(url_for('main.dashboard'))
+            return render_template('transactions/ventas.html', ventas=[], vendedor_sin_link=True)
         ventas = db.execute('''
             SELECT v.*, c.nombre as cliente_nombre, ve.nombre as vendedor_nombre
             FROM ventas v

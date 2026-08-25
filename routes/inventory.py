@@ -219,8 +219,18 @@ def editar_producto(id):
         (id,)
     ).fetchall()
     categorias = db.execute('SELECT * FROM categorias ORDER BY nombre').fetchall()
+    productos = db.execute('''
+        SELECT p.*, c.nombre as categoria_nombre,
+               i.id as imagen_id, i.mimetype as imagen_mimetype,
+               COALESCE(img_count.cnt, 0) AS total_imagenes
+        FROM productos p
+        LEFT JOIN categorias c ON p.categoria_id = c.id
+        LEFT JOIN producto_imagenes i ON p.id = i.producto_id AND i.es_principal = 1
+        LEFT JOIN (SELECT producto_id, COUNT(*) AS cnt FROM producto_imagenes GROUP BY producto_id) img_count ON p.id = img_count.producto_id
+        ORDER BY p.nombre
+    ''').fetchall()
     db.close()
-    return render_template('inventory/productos.html', producto=producto, imagenes=imagenes, categorias=categorias)
+    return render_template('inventory/productos.html', producto=producto, imagenes=imagenes, categorias=categorias, productos=productos)
 
 @inventory_bp.route('/productos/editar/<int:id>', methods=['POST'])
 @login_required

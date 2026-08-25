@@ -41,11 +41,11 @@
                     <i class="fas fa-th-large"></i><span>Dashboard</span>
                 </a>
 
-                {% if rol != 'VENDEDOR' %}
                 <div class="nav-section-title">Inventario</div>
                 <a href="{{ url_for('inventory.productos') }}" class="nav-item {% if request.endpoint and 'producto' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-box"></i><span>Productos</span>
                 </a>
+                {% if rol != 'VENDEDOR' %}
                 <a href="{{ url_for('inventory.categorias') }}" class="nav-item {% if request.endpoint and 'categor' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-tag"></i><span>Categorías</span>
                 </a>

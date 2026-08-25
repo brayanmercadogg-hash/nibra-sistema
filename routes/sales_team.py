@@ -129,8 +129,7 @@ def comisiones():
         ).fetchone()
         if not propio:
             db.close()
-            flash('Tu usuario no esta vinculado a un perfil de vendedor', 'warning')
-            return redirect(url_for('main.dashboard'))
+            return render_template('sales_team/comisiones.html', comisiones=[], vendedores=[], vendedor_id='', fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, solo_propio=True, vendedor_sin_link=True)
         vendedor_id = str(propio['id'])
         solo_propio = True
 

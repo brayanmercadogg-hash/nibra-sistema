@@ -2,6 +2,11 @@
 {% block title %}Comisiones{% endblock %}
 {% block page_title %}Comisiones{% endblock %}
 {% block content %}
+{% if vendedor_sin_link is defined and vendedor_sin_link %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i> Tu usuario no tiene un perfil de vendedor vinculado. Contacta al administrador para ver tus comisiones.
+</div>
+{% endif %}
 <div class="content-header">
     <h2>Filtros</h2>
 </div>

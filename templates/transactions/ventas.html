@@ -2,6 +2,11 @@
 {% block title %}Ventas{% endblock %}
 {% block page_title %}Ventas{% endblock %}
 {% block content %}
+{% if vendedor_sin_link is defined and vendedor_sin_link %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i> Tu usuario no tiene un perfil de vendedor vinculado. Contacta al administrador para que te vincule y puedas ver tus ventas.
+</div>
+{% endif %}
 <div class="page-header">
     <h1>Ventas</h1>
     <a href="{{ url_for('transactions.venta_nueva') }}" class="btn btn-primary">
