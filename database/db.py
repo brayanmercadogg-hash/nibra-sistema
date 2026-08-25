@@ -341,6 +341,15 @@ def init_db():
             pendiente REAL DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+        CREATE TABLE IF NOT EXISTS producto_imagenes (
+            id SERIAL PRIMARY KEY,
+            producto_id INTEGER NOT NULL REFERENCES productos(id) ON DELETE CASCADE,
+            imagen BYTEA NOT NULL,
+            mimetype TEXT DEFAULT 'image/jpeg',
+            es_principal INTEGER DEFAULT 0,
+            orden INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
         """)
         conn.commit()
     else:
@@ -503,9 +512,55 @@ def init_db():
             FOREIGN KEY (vendedor_id) REFERENCES vendedores(id),
             FOREIGN KEY (venta_id) REFERENCES ventas(id)
         );
+        CREATE TABLE IF NOT EXISTS producto_imagenes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            producto_id INTEGER NOT NULL,
+            imagen BLOB NOT NULL,
+            mimetype TEXT DEFAULT 'image/jpeg',
+            es_principal INTEGER DEFAULT 0,
+            orden INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE
+        );
         ''')
         conn.commit()
+    _migrar_imagenes_locales(conn)
     conn.close()
+
+
+def _migrar_imagenes_locales(conn):
+    """Mueve las imagenes referenciadas por productos.imagen desde
+    static/img/uploads a la tabla producto_imagenes (una sola vez)."""
+    import os
+    try:
+        rows = conn.execute(
+            "SELECT id, imagen FROM productos WHERE imagen IS NOT NULL AND imagen != ''"
+        ).fetchall()
+        if not rows:
+            return
+        upload_dir = os.path.join('static', 'img', 'uploads')
+        ext_mimetype = {'.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
+                        '.gif': 'image/gif', '.webp': 'image/webp'}
+        for r in rows:
+            filename = r['imagen']
+            path = os.path.join(upload_dir, filename)
+            if not os.path.exists(path):
+                conn.execute("UPDATE productos SET imagen = NULL WHERE id = ?", (r['id'],))
+                continue
+            with open(path, 'rb') as f:
+                data = f.read()
+            mimetype = ext_mimetype.get(os.path.splitext(filename)[1].lower(), 'image/jpeg')
+            payload = memoryview(data) if _is_postgres() else data
+            conn.execute(
+                '''INSERT INTO producto_imagenes (producto_id, imagen, mimetype, es_principal, orden)
+                   VALUES (?, ?, ?, 1, 0)''',
+                (r['id'], payload, mimetype)
+            )
+            conn.execute("UPDATE productos SET imagen = NULL WHERE id = ?", (r['id'],))
+        conn.commit()
+        print(f"Migradas {len(rows)} imagenes de productos a la base de datos")
+    except Exception as e:
+        print(f"WARNING: migracion de imagenes fallo: {e}")
 
 
 def seed_admin():
@@ -520,8 +575,6 @@ def seed_admin():
                 "INSERT INTO usuarios (username, password_hash, nombre, email, rol, debe_cambiar_contrasena) VALUES (%s, %s, %s, %s, %s, %s)",
                 ('admin', generate_password_hash('admin123'), 'Administrador', 'admin@nibra.com', 'ADMIN', 1)
             )
-        else:
-            cur.execute("UPDATE usuarios SET debe_cambiar_contrasena = 1 WHERE username = 'admin'")
     else:
         existing = cur.execute("SELECT id FROM usuarios WHERE username = 'admin'").fetchone()
         if not existing:
@@ -535,10 +588,5 @@ def seed_admin():
                     "INSERT INTO usuarios (username, password_hash, nombre, email, rol) VALUES (?, ?, ?, ?, ?)",
                     ('admin', generate_password_hash('admin123'), 'Administrador', 'admin@nibra.com', 'ADMIN')
                 )
-        else:
-            try:
-                cur.execute("UPDATE usuarios SET debe_cambiar_contrasena = 1 WHERE username = 'admin'")
-            except Exception:
-                pass
     conn.commit()
     conn.close()

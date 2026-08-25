@@ -115,10 +115,11 @@
                                 {% endif %}
                             </td>
                             <td class="actions-cell">
-                                <a href="{{ url_for('main.usuarios') }}" class="btn btn-sm btn-outline"
-                                   onclick="editUser({{ user.id }}, '{{ user.username }}', '{{ user.nombre }}', '{{ user.email or '' }}', '{{ user.rol }}')">
+                                <button type="button" class="btn btn-sm btn-outline"
+                                        onclick="editUser({{ user.id }}, {{ user.username|tojson }}, {{ user.nombre|tojson }}, {{ (user.email or '')|tojson }}, {{ user.rol|tojson }})"
+                                        title="Editar usuario">
                                     <i class="fas fa-edit"></i>
-                                </a>
+                                </button>
                                 <form method="POST" action="{{ url_for('main.usuarios') }}" style="display:inline">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="action" value="delete">
@@ -173,22 +174,23 @@
         form.querySelector('#rol').value = rol;
 
         var header = document.querySelector('.card-header h3');
-        header.innerHTML = '<i class="fas fa-user-edit"></i> Editar Usuario';
+        header.innerHTML = '<i class="fas fa-user-edit"></i> Editar Usuario #' + id;
 
         var submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.innerHTML = '<i class="fas fa-save"></i> Actualizar';
         submitBtn.className = 'btn btn-primary';
 
-        var cancelBtn = document.createElement('a');
-        cancelBtn.href = '{{ url_for("main.usuarios") }}';
-        cancelBtn.className = 'btn btn-secondary';
-        cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancelar';
-        cancelBtn.style.marginLeft = '8px';
-
         var actionsDiv = form.querySelector('.form-actions');
         var existingCancel = actionsDiv.querySelector('.btn-secondary');
         if (existingCancel) existingCancel.remove();
+        var cancelBtn = document.createElement('a');
+        cancelBtn.href = window.location.pathname;
+        cancelBtn.className = 'btn btn-secondary';
+        cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+        cancelBtn.style.marginLeft = '8px';
         actionsDiv.appendChild(cancelBtn);
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
 {% endblock %}

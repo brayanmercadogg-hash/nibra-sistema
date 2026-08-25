@@ -198,8 +198,148 @@
             color: #e5e5e5;
         }
 
+        .catalogo-card-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            color: #a3a3a3;
+        }
+        .catalogo-card-meta .codigo {
+            font-family: monospace;
+            background: #fafafa;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            padding: 0.05rem 0.35rem;
+        }
+        .catalogo-badge-imgs {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.6875rem;
+            color: #737373;
+            background: #f5f5f5;
+            border-radius: 4px;
+            padding: 0.15rem 0.45rem;
+            font-weight: 600;
+        }
+        .catalogo-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f5f5f5;
+        }
+        .catalogo-card-price {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #0a0a0a;
+        }
+        .catalogo-btn-detalle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.9rem;
+            background: #0a0a0a;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .catalogo-btn-detalle:hover { background: #262626; }
+
+        /* Modal detalle */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10,10,10,0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            max-width: 860px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        }
+        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; }
+        .modal-galeria { padding: 1.25rem; }
+        .modal-imagen-principal {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #f5f5f5;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-imagen-principal img {
+            width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;
+        }
+        .modal-thumbs {
+            display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap;
+        }
+        .modal-thumb {
+            width: 64px; height: 64px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.15s, border-color 0.15s;
+            background: #f5f5f5;
+        }
+        .modal-thumb.active, .modal-thumb:hover { opacity: 1; border-color: #0a0a0a; }
+        .modal-info { padding: 1.5rem 1.5rem 1.5rem 0.5rem; }
+        .modal-cerrar {
+            position: sticky; top: 0; float: right;
+            background: none; border: none; font-size: 1.4rem;
+            cursor: pointer; color: #a3a3a3; padding: 0.75rem 1rem;
+            transition: color 0.15s;
+        }
+        .modal-cerrar:hover { color: #0a0a0a; }
+        .modal-info .cat {
+            display: inline-block; padding: 0.2rem 0.5rem;
+            background: #f5f5f5; color: #737373; border-radius: 4px;
+            font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.03em;
+            text-transform: uppercase; margin-bottom: 0.6rem;
+        }
+        .modal-info h2 { font-size: 1.35rem; font-weight: 700; margin-bottom: 0.35rem; }
+        .modal-precio { font-size: 1.5rem; font-weight: 800; color: #0a0a0a; margin: 0.75rem 0; }
+        .modal-detalles {
+            list-style: none; margin: 1rem 0; padding: 0;
+            border-top: 1px solid #f0f0f0;
+        }
+        .modal-detalles li {
+            display: flex; justify-content: space-between; gap: 1rem;
+            padding: 0.55rem 0; border-bottom: 1px solid #f5f5f5;
+            font-size: 0.85rem;
+        }
+        .modal-detalles li span:first-child { color: #a3a3a3; font-weight: 500; }
+        .modal-detalles li span:last-child { font-weight: 600; text-align: right; }
+        .modal-descripcion {
+            font-size: 0.875rem; color: #525252; line-height: 1.65;
+            white-space: pre-line; margin-top: 0.5rem;
+        }
+
         @media (max-width: 900px) {
             .catalogo-grid { grid-template-columns: repeat(2, 1fr); }
+            .modal-grid { grid-template-columns: 1fr; }
+            .modal-info { padding: 0 1.5rem 1.5rem; }
         }
         @media (max-width: 560px) {
             .catalogo-grid { grid-template-columns: 1fr; }
@@ -238,10 +378,11 @@
     <div class="catalogo-wrapper">
         <div class="catalogo-grid">
             {% for p in productos %}
+            {% set imgs = imagenes_por_producto.get(p.id, []) %}
             <div class="catalogo-card">
                 <div class="catalogo-card-image">
-                    {% if p.imagen %}
-                    <img src="{{ url_for('static', filename='img/uploads/' + p.imagen) }}" alt="{{ p.nombre }}">
+                    {% if imgs %}
+                    <img src="{{ url_for('public.producto_imagen', img_id=imgs[0]) }}" alt="{{ p.nombre }}" loading="lazy">
                     {% else %}
                     <div class="catalogo-card-placeholder">
                         <i class="fas fa-image"></i>
@@ -251,9 +392,19 @@
                 <div class="catalogo-card-body">
                     <span class="catalogo-card-category">{{ p.categoria_nombre or 'Sin categoría' }}</span>
                     <h3 class="catalogo-card-title">{{ p.nombre }}</h3>
-                    <p class="catalogo-card-desc">{{ p.descripcion or '' }}</p>
+                    <div class="catalogo-card-meta">
+                        <span class="codigo">{{ p.codigo }}</span>
+                        {% if p.marca %}<span>{{ p.marca }}</span>{% endif %}
+                        {% if imgs|length > 1 %}
+                        <span class="catalogo-badge-imgs"><i class="fas fa-images"></i> {{ imgs|length }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="catalogo-card-desc" style="margin-top:0.5rem">{{ p.descripcion or '' }}</p>
                     <div class="catalogo-card-footer">
                         <span class="catalogo-card-price">${{ '{:,.2f}'.format(p.precio_venta|float) }}</span>
+                        <button type="button" class="catalogo-btn-detalle" onclick="abrirDetalle({{ loop.index0 }})">
+                            <i class="fas fa-eye"></i> Ver detalles
+                        </button>
                     </div>
                 </div>
             </div>
@@ -265,5 +416,98 @@
             {% endfor %}
         </div>
     </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)cerrarModal()">
+        <div class="modal" role="dialog" aria-modal="true">
+            <button type="button" class="modal-cerrar" onclick="cerrarModal()" aria-label="Cerrar">&times;</button>
+            <div class="modal-grid">
+                <div class="modal-galeria">
+                    <div class="modal-imagen-principal" id="mImagenWrap">
+                        <img id="mImagen" src="" alt="" style="display:none">
+                        <i class="fas fa-image" id="mPlaceholder" style="font-size:3rem;color:#e5e5e5"></i>
+                    </div>
+                    <div class="modal-thumbs" id="mThumbs"></div>
+                </div>
+                <div class="modal-info">
+                    <span class="cat" id="mCategoria"></span>
+                    <h2 id="mNombre"></h2>
+                    <div class="catalogo-card-meta">
+                        <span class="codigo" id="mCodigo"></span>
+                        <span id="mMarca"></span>
+                    </div>
+                    <div class="modal-precio" id="mPrecio"></div>
+                    <ul class="modal-detalles">
+                        <li><span>Código</span><span id="mCodigo2"></span></li>
+                        <li><span>Categoría</span><span id="mCategoria2"></span></li>
+                        <li><span>Marca</span><span id="mMarca2"></span></li>
+                        <li><span>Fotos</span><span id="mFotos"></span></li>
+                    </ul>
+                    <strong style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;color:#a3a3a3">Descripción</strong>
+                    <p class="modal-descripcion" id="mDescripcion"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="application/json" id="productosData">{{ datos_json|safe }}</script>
+    <script>
+        var PRODUCTOS = JSON.parse(document.getElementById('productosData').textContent);
+        var productoActual = null;
+
+        function abrirDetalle(idx) {
+            var p = PRODUCTOS[idx];
+            if (!p) return;
+            productoActual = p;
+            document.getElementById('mNombre').textContent = p.nombre;
+            document.getElementById('mCodigo').textContent = p.codigo;
+            document.getElementById('mCodigo2').textContent = p.codigo;
+            document.getElementById('mCategoria').textContent = p.categoria;
+            document.getElementById('mCategoria2').textContent = p.categoria;
+            document.getElementById('mMarca').textContent = p.marca || '';
+            document.getElementById('mMarca2').textContent = p.marca || 'N/A';
+            document.getElementById('mPrecio').textContent = '$' + p.precio.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('mFotos').textContent = (p.imagenes.length || 0);
+            document.getElementById('mDescripcion').textContent = p.descripcion || 'Sin descripción.';
+
+            var thumbs = document.getElementById('mThumbs');
+            thumbs.innerHTML = '';
+            if (p.imagenes.length === 0) {
+                document.getElementById('mImagen').style.display = 'none';
+                document.getElementById('mPlaceholder').style.display = '';
+            } else {
+                document.getElementById('mPlaceholder').style.display = 'none';
+                setImagenPrincipal(p.imagenes[0], 0);
+                p.imagenes.forEach(function(imgId, i) {
+                    var t = document.createElement('img');
+                    t.src = '/catalogo/imagen/' + imgId;
+                    t.className = 'modal-thumb';
+                    t.alt = 'Foto ' + (i + 1);
+                    t.dataset.idx = i;
+                    t.onclick = function() { setImagenPrincipal(imgId, i); };
+                    thumbs.appendChild(t);
+                });
+            }
+            document.getElementById('modalOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function setImagenPrincipal(imgId, idx) {
+            var img = document.getElementById('mImagen');
+            img.style.display = '';
+            img.src = '/catalogo/imagen/' + imgId;
+            img.onclick = function() { window.open(this.src, '_blank'); };
+            var ts = document.querySelectorAll('.modal-thumb');
+            ts.forEach(function(t) { t.classList.toggle('active', parseInt(t.dataset.idx) === idx); });
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') cerrarModal();
+        });
+    </script>
 </body>
 </html>

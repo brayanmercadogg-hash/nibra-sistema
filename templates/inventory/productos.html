@@ -12,7 +12,6 @@
     <div class="card-body">
         {% if producto %}
         <form method="POST" action="{{ url_for('inventory.actualizar_producto', id=producto.id) }}" enctype="multipart/form-data">
-            <input type="hidden" name="imagen_actual" value="{{ producto.imagen or '' }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {% else %}
         <form method="POST" action="{{ url_for('inventory.crear_producto') }}" enctype="multipart/form-data">
@@ -65,8 +64,9 @@
                            value="{{ producto.precio_venta if producto else '0' }}">
                 </div>
                 <div class="form-group">
-                    <label for="imagen">Imagen</label>
-                    <input type="file" id="imagen" name="imagen" class="form-control" accept="image/*">
+                    <label for="imagenes">Imágenes (puedes seleccionar varias)</label>
+                    <input type="file" id="imagenes" name="imagenes" class="form-control" accept="image/*" multiple>
+                    <small class="form-text">JPG, PNG, GIF o WEBP. Máximo 8MB por imagen. La primera será la principal.</small>
                 </div>
             </div>
             <div class="grid-2">
@@ -77,13 +77,35 @@
                         <option value="INACTIVO" {% if producto and producto.estado == 'INACTIVO' %}selected{% endif %}>Inactivo</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    {% if producto and producto.imagen %}
-                    <label>Imagen actual</label><br>
-                    <img src="{{ url_for('static', filename='img/uploads/' + producto.imagen) }}" alt="imagen" style="max-height:72px;border-radius:var(--radius-sm);border:1px solid var(--border)">
-                    {% endif %}
+                <div class="form-group"></div>
+            </div>
+            {% if producto and imagenes %}
+            <div class="form-group">
+                <label>Imágenes actuales ({{ imagenes|length }})</label>
+                <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px">
+                    {% for img in imagenes %}
+                    <div style="text-align:center;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;background:#fff">
+                        <img src="{{ url_for('public.producto_imagen', img_id=img.id) }}" alt=""
+                             style="width:90px;height:90px;object-fit:cover;border-radius:var(--radius-xs)">
+                        <div style="margin-top:6px;font-size:11px">
+                            {% if img.es_principal %}
+                            <span class="badge badge-success">Principal</span>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('inventory.imagen_principal', img_id=img.id) }}" style="display:inline" onsubmit="return true">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline" title="Hacer principal"><i class="fas fa-star"></i></button>
+                            </form>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('inventory.eliminar_imagen', img_id=img.id) }}" style="display:inline" onsubmit="return confirm('¿Eliminar esta imagen?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-danger" title="Eliminar"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
+            {% endif %}
             {% if not producto %}
             <p class="form-text mb-2"><i class="fas fa-info-circle" style="opacity:.4"></i> El código del producto se generará automáticamente.</p>
             {% endif %}
@@ -133,8 +155,13 @@
                         <td style="font-weight:500">{{ p.precio_venta|currency }}</td>
                         <td class="hide-sm">{{ "%.1f"|format(p.margen) }}%</td>
                         <td class="hide-sm">
-                            {% if p.imagen %}
-                            <img src="{{ url_for('static', filename='img/uploads/' + p.imagen) }}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:var(--radius-xs);border:1px solid var(--border)">
+                            {% if p.imagen_id %}
+                            <a href="{{ url_for('inventory.editar_producto', id=p.id) }}" title="{{ p.total_imagenes }} imagen(es)">
+                                <img src="{{ url_for('public.producto_imagen', img_id=p.imagen_id) }}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:var(--radius-xs);border:1px solid var(--border)">
+                            </a>
+                            {% if p.total_imagenes > 1 %}
+                            <small class="text-muted">+{{ p.total_imagenes - 1 }}</small>
+                            {% endif %}
                             {% else %}
                             <span class="text-muted">-</span>
                             {% endif %}
