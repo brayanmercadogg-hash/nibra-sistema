@@ -112,10 +112,14 @@ def cliente_update(id):
 def cliente_eliminar(id):
     db = get_db()
     try:
+        # Se desvinculan las ventas/cuentas (el historial se conserva)
+        db.execute("UPDATE ventas SET cliente_id = NULL WHERE cliente_id = ?", (id,))
+        db.execute("UPDATE cuentas_por_cobrar SET cliente_id = NULL WHERE cliente_id = ?", (id,))
         db.execute("DELETE FROM clientes WHERE id = ?", (id,))
         db.commit()
         flash('Cliente eliminado correctamente', 'success')
-    except Exception:
+    except Exception as e:
+        print(f"ERROR eliminar cliente: {e}")
         flash('Error al eliminar el cliente', 'error')
     finally:
         db.close()
@@ -246,10 +250,13 @@ def proveedor_update(id):
 def proveedor_eliminar(id):
     db = get_db()
     try:
+        # Se desvinculan las compras (el historial se conserva)
+        db.execute("UPDATE compras SET proveedor_id = NULL WHERE proveedor_id = ?", (id,))
         db.execute("DELETE FROM proveedores WHERE id = ?", (id,))
         db.commit()
         flash('Proveedor eliminado correctamente', 'success')
-    except Exception:
+    except Exception as e:
+        print(f"ERROR eliminar proveedor: {e}")
         flash('Error al eliminar el proveedor', 'error')
     finally:
         db.close()

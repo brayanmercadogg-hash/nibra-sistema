@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Solicitudes{% endblock %}
+{% block page_title %}Solicitudes de Productos{% endblock %}
+
+{% block content %}
+<div class="dash-section-title"><i class="fas fa-paper-plane"></i> Nueva Solicitud</div>
+<div class="card">
+    <div class="card-body">
+        {% if not vendedor %}
+            <div class="alert alert-warning">
+                Tu usuario no esta vinculado a un perfil de vendedor. Contacta al administrador.
+            </div>
+        {% else %}
+        <form method="POST" action="{{ url_for('solicitudes.crear') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="display:grid;grid-template-columns:2fr 120px 1fr;gap:1rem;">
+                <div class="form-group">
+                    <label for="nombre_producto">Producto solicitado *</label>
+                    <input type="text" id="nombre_producto" name="nombre_producto" class="form-control"
+                           placeholder="Ej: Taladro percutor 800W marca Bosch" required maxlength="200">
+                </div>
+                <div class="form-group">
+                    <label for="cantidad">Cantidad</label>
+                    <input type="number" id="cantidad" name="cantidad" class="form-control" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="detalles">Detalles (opcional)</label>
+                    <input type="text" id="detalles" name="detalles" class="form-control"
+                           placeholder="Marca, modelo, caracteristicas..." maxlength="500">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Enviar Solicitud
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="dash-section-title" style="margin-top:1.5rem;">
+    <i class="fas fa-list-check"></i> Mis Solicitudes Enviadas
+</div>
+
+{% if solicitudes %}
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Detalles</th>
+                <th>Estado</th>
+                <th>Respuesta del Admin</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in solicitudes %}
+            <tr>
+                <td>{{ s.created_at[:10] if s.created_at }}</td>
+                <td><strong>{{ s.nombre_producto }}</strong></td>
+                <td>{{ s.cantidad }}</td>
+                <td>{{ s.detalles or '-' }}</td>
+                <td>
+                    {% if s.estado == 'PENDIENTE' %}
+                        <span class="badge badge-warning">Pendiente</span>
+                    {% elif s.estado == 'ATENDIDA' %}
+                        <span class="badge badge-success">Atendida</span>
+                    {% else %}
+                        <span class="badge badge-danger">Rechazada</span>
+                    {% endif %}
+                </td>
+                <td>{{ s.respuesta or '-' }}</td>
+                <td>
+                    {% if s.estado == 'PENDIENTE' %}
+                    <form method="POST" action="{{ url_for('solicitudes.cancelar', id=s.id) }}"
+                          onsubmit="return confirm('Cancelar esta solicitud?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline" title="Cancelar solicitud">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h3>Sin solicitudes todavia</h3>
+        <p>Usa el formulario para pedir los productos que necesitas.</p>
+    </div>
+{% endif %}
+{% endblock %}

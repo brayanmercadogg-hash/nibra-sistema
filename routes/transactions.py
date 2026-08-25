@@ -219,13 +219,32 @@ def compra_editar(id):
 @login_required
 def ventas_list():
     db = get_db()
-    ventas = db.execute('''
-        SELECT v.*, c.nombre as cliente_nombre, ve.nombre as vendedor_nombre
-        FROM ventas v
-        LEFT JOIN clientes c ON v.cliente_id = c.id
-        LEFT JOIN vendedores ve ON v.vendedor_id = ve.id
-        ORDER BY v.created_at DESC
-    ''').fetchall()
+    if session.get('rol') == 'VENDEDOR':
+        # Los vendedores solo ven sus propias ventas
+        vend = db.execute(
+            "SELECT id FROM vendedores WHERE usuario_id = ? LIMIT 1",
+            (session['user_id'],)
+        ).fetchone()
+        if not vend:
+            db.close()
+            flash('Tu usuario no esta vinculado a un perfil de vendedor', 'warning')
+            return redirect(url_for('main.dashboard'))
+        ventas = db.execute('''
+            SELECT v.*, c.nombre as cliente_nombre, ve.nombre as vendedor_nombre
+            FROM ventas v
+            LEFT JOIN clientes c ON v.cliente_id = c.id
+            LEFT JOIN vendedores ve ON v.vendedor_id = ve.id
+            WHERE v.vendedor_id = ?
+            ORDER BY v.created_at DESC
+        ''', (vend['id'],)).fetchall()
+    else:
+        ventas = db.execute('''
+            SELECT v.*, c.nombre as cliente_nombre, ve.nombre as vendedor_nombre
+            FROM ventas v
+            LEFT JOIN clientes c ON v.cliente_id = c.id
+            LEFT JOIN vendedores ve ON v.vendedor_id = ve.id
+            ORDER BY v.created_at DESC
+        ''').fetchall()
     db.close()
     return render_template('transactions/ventas.html', ventas=ventas)
 
@@ -344,6 +363,20 @@ def venta_detalle(id):
         LEFT JOIN vendedores ve ON v.vendedor_id = ve.id
         WHERE v.id = ?
     ''', (id,)).fetchone()
+    if not venta:
+        db.close()
+        flash('Venta no encontrada', 'danger')
+        return redirect(url_for('transactions.ventas_list'))
+    if session.get('rol') == 'VENDEDOR':
+        # Un vendedor solo puede ver el detalle de sus propias ventas
+        vend = db.execute(
+            "SELECT id FROM vendedores WHERE usuario_id = ? LIMIT 1",
+            (session['user_id'],)
+        ).fetchone()
+        if not vend or venta['vendedor_id'] != vend['id']:
+            db.close()
+            flash('No tienes permiso para ver esta venta', 'error')
+            return redirect(url_for('transactions.ventas_list'))
     detalles = db.execute('''
         SELECT vd.*, pr.codigo as producto_codigo
         FROM venta_detalles vd
@@ -351,14 +384,12 @@ def venta_detalle(id):
         WHERE vd.venta_id = ?
     ''', (id,)).fetchall()
     db.close()
-    if not venta:
-        flash('Venta no encontrada', 'danger')
-        return redirect(url_for('transactions.ventas_list'))
     return render_template('transactions/venta_detalle.html', venta=venta, detalles=detalles)
 
 
 @transactions.route('/ventas/editar/<int:id>', methods=['GET'])
 @login_required
+@partner_or_admin_required
 def venta_editar_form(id):
     db = get_db()
     venta = db.execute('SELECT * FROM ventas WHERE id = ?', (id,)).fetchone()
@@ -376,6 +407,7 @@ def venta_editar_form(id):
 
 @transactions.route('/ventas/editar/<int:id>', methods=['POST'])
 @login_required
+@partner_or_admin_required
 def venta_editar(id):
     data = request.get_json()
     if not data:
@@ -475,6 +507,7 @@ def venta_editar(id):
 
 @transactions.route('/cuentas-cobrar')
 @login_required
+@partner_or_admin_required
 def cuentas_cobrar_list():
     db = get_db()
     filtro_estado = request.args.get('estado', '')
@@ -496,6 +529,7 @@ def cuentas_cobrar_list():
 
 @transactions.route('/cuentas-cobrar/<int:id>')
 @login_required
+@partner_or_admin_required
 def cuenta_detalle(id):
     db = get_db()
     cuenta = db.execute('''
@@ -517,6 +551,7 @@ def cuenta_detalle(id):
 
 @transactions.route('/cuentas-cobrar/abonar/<int:cuenta_id>', methods=['POST'])
 @login_required
+@partner_or_admin_required
 def cuenta_abonar(cuenta_id):
     data = request.get_json()
     if not data:

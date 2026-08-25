@@ -7,15 +7,17 @@
 <div class="grid-2" style="align-items: start;">
     <div class="card">
         <div class="card-header">
-            <h3><i class="fas fa-user-plus"></i> {{ 'Editar Usuario' if editing else 'Crear Usuario' }}</h3>
+            <h3><i class="fas fa-{{ 'user-pen' if editing else 'user-plus' }}"></i> {{ 'Editar Usuario: ' + editing.username if editing else 'Crear Usuario' }}</h3>
         </div>
         <div class="card-body">
+            {% if editing %}
+            <form method="POST" action="{{ url_for('main.usuarios_editar', user_id=editing.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% else %}
             <form method="POST" action="{{ url_for('main.usuarios') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="action" value="{{ 'edit' if editing else 'create' }}">
-                {% if editing %}
-                    <input type="hidden" name="user_id" value="{{ editing.id }}">
-                {% endif %}
+                <input type="hidden" name="action" value="create">
+            {% endif %}
 
                 <div class="form-group">
                     <label for="username">Username</label>
@@ -115,11 +117,10 @@
                                 {% endif %}
                             </td>
                             <td class="actions-cell">
-                                <button type="button" class="btn btn-sm btn-outline"
-                                        onclick="editUser({{ user.id }}, {{ user.username|tojson }}, {{ user.nombre|tojson }}, {{ (user.email or '')|tojson }}, {{ user.rol|tojson }})"
-                                        title="Editar usuario">
+                                <a href="{{ url_for('main.usuarios_editar', user_id=user.id) }}" class="btn btn-sm btn-outline"
+                                   title="Editar usuario">
                                     <i class="fas fa-edit"></i>
-                                </button>
+                                </a>
                                 <form method="POST" action="{{ url_for('main.usuarios') }}" style="display:inline">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="action" value="delete">
@@ -149,48 +150,6 @@
 <script>
     function confirmDelete(username) {
         return confirm('¿Está seguro de eliminar al usuario "' + username + '"? Esta acción no se puede deshacer.');
-    }
-
-    function editUser(id, username, nombre, email, rol) {
-        var form = document.querySelector('.card form');
-        form.querySelector('input[name="action"]').value = 'edit';
-
-        var userIdInput = form.querySelector('input[name="user_id"]');
-        if (userIdInput) {
-            userIdInput.value = id;
-        } else {
-            userIdInput = document.createElement('input');
-            userIdInput.type = 'hidden';
-            userIdInput.name = 'user_id';
-            userIdInput.value = id;
-            form.appendChild(userIdInput);
-        }
-
-        form.querySelector('#username').value = username;
-        form.querySelector('#password').value = '';
-        form.querySelector('#password').removeAttribute('required');
-        form.querySelector('#nombre').value = nombre;
-        form.querySelector('#email').value = email;
-        form.querySelector('#rol').value = rol;
-
-        var header = document.querySelector('.card-header h3');
-        header.innerHTML = '<i class="fas fa-user-edit"></i> Editar Usuario #' + id;
-
-        var submitBtn = form.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '<i class="fas fa-save"></i> Actualizar';
-        submitBtn.className = 'btn btn-primary';
-
-        var actionsDiv = form.querySelector('.form-actions');
-        var existingCancel = actionsDiv.querySelector('.btn-secondary');
-        if (existingCancel) existingCancel.remove();
-        var cancelBtn = document.createElement('a');
-        cancelBtn.href = window.location.pathname;
-        cancelBtn.className = 'btn btn-secondary';
-        cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancelar';
-        cancelBtn.style.marginLeft = '8px';
-        actionsDiv.appendChild(cancelBtn);
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
 {% endblock %}

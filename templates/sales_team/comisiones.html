@@ -9,6 +9,11 @@
 <div class="card">
     <form method="GET" action="{{ url_for('sales_team.comisiones') }}" class="form-grid">
         <div class="form-group">
+            {% if solo_propio %}
+            <label for="vendedor_id">Vendedor</label>
+            <input type="hidden" name="vendedor_id" value="{{ vendedor_id }}">
+            <input type="text" class="form-control" value="Mis comisiones" disabled>
+            {% else %}
             <label for="vendedor_id">Vendedor</label>
             <select id="vendedor_id" name="vendedor_id" class="form-control">
                 <option value="">-- Todos los vendedores --</option>
@@ -18,6 +23,7 @@
                 </option>
                 {% endfor %}
             </select>
+            {% endif %}
         </div>
         <div class="form-group">
             <label for="fecha_inicio">Fecha Inicio</label>

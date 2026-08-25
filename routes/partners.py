@@ -85,10 +85,22 @@ def editar_socio(id):
 @admin_required
 def eliminar_socio(id):
     db = get_db()
-    db.execute('DELETE FROM socios WHERE id = ?', (id,))
-    db.commit()
-    db.close()
-    flash('Socio eliminado exitosamente', 'success')
+    dist_count = db.execute(
+        'SELECT COUNT(*) AS cnt FROM distribucion_detalles WHERE socio_id = ?', (id,)
+    ).fetchone()['cnt']
+    if dist_count > 0:
+        db.close()
+        flash(f'No se puede eliminar: el socio tiene {dist_count} distribuciones registradas. Marcalo como INACTIVO en su lugar.', 'error')
+        return redirect(url_for('partners.socios'))
+    try:
+        db.execute('DELETE FROM socios WHERE id = ?', (id,))
+        db.commit()
+        flash('Socio eliminado exitosamente', 'success')
+    except Exception as e:
+        print(f"ERROR eliminar socio: {e}")
+        flash('Error al eliminar el socio', 'error')
+    finally:
+        db.close()
     return redirect(url_for('partners.socios'))
 
 

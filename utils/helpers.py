@@ -30,3 +30,10 @@ def validate_password(password):
     if not re.search(r'[!@#$%^&*(),.?\":{}|<>\-_=+\[\]\\;\'`~]', password):
         errors.append('Al menos 1 caracter especial (!@#$%^&*...)')
     return errors
+
+
+def get_vendedor_del_usuario(db, user_id):
+    """Retorna el registro de vendedor vinculado a un usuario (o None)."""
+    return db.execute(
+        "SELECT * FROM vendedores WHERE usuario_id = ? LIMIT 1", (user_id,)
+    ).fetchone()

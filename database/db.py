@@ -36,6 +36,8 @@ class _PgConnWrapper:
         sql = sql.replace("strftime('%w', fecha)", "EXTRACT(DOW FROM fecha)::INTEGER")
         sql = sql.replace("strftime('%m', fecha)", "EXTRACT(MONTH FROM fecha)::INTEGER")
         sql = sql.replace("strftime('%Y', fecha)", "EXTRACT(YEAR FROM fecha)::INTEGER")
+        # Busquedas case-insensitive (paridad con SQLite)
+        sql = re.sub(r'\bLIKE\b', 'ILIKE', sql)
         sql = re.sub(r'\?(?!\?)', '%s', sql)
         cur = self._conn.cursor()
         inserted_id = None
@@ -350,6 +352,17 @@ def init_db():
             orden INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+        CREATE TABLE IF NOT EXISTS solicitudes_productos (
+            id SERIAL PRIMARY KEY,
+            vendedor_id INTEGER REFERENCES vendedores(id),
+            usuario_id INTEGER REFERENCES usuarios(id),
+            nombre_producto TEXT NOT NULL,
+            detalles TEXT,
+            cantidad INTEGER DEFAULT 1,
+            estado TEXT NOT NULL DEFAULT 'PENDIENTE',
+            respuesta TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
         """)
         conn.commit()
     else:
@@ -521,6 +534,19 @@ def init_db():
             orden INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE
+        );
+        CREATE TABLE IF NOT EXISTS solicitudes_productos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            vendedor_id INTEGER,
+            usuario_id INTEGER,
+            nombre_producto TEXT NOT NULL,
+            detalles TEXT,
+            cantidad INTEGER DEFAULT 1,
+            estado TEXT NOT NULL DEFAULT 'PENDIENTE',
+            respuesta TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (vendedor_id) REFERENCES vendedores(id),
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
         );
         ''')
         conn.commit()

@@ -343,11 +343,15 @@ def imagen_principal(img_id):
 def eliminar_producto(id):
     db = get_db()
     try:
+        # El historial (compras/ventas) se conserva: solo se desvincula el producto
+        db.execute('UPDATE compra_detalles SET producto_id = NULL WHERE producto_id = ?', (id,))
+        db.execute('UPDATE venta_detalles SET producto_id = NULL WHERE producto_id = ?', (id,))
         db.execute('DELETE FROM producto_imagenes WHERE producto_id = ?', (id,))
         db.execute('DELETE FROM productos WHERE id = ?', (id,))
         db.commit()
         flash('Producto eliminado exitosamente.', 'success')
-    except Exception:
+    except Exception as e:
+        print(f"ERROR eliminar producto: {e}")
         flash('Error al eliminar el producto.', 'error')
     finally:
         db.close()

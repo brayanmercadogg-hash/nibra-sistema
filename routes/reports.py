@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify
 from database.db import get_db
-from utils.decorators import login_required
+from utils.decorators import login_required, partner_or_admin_required
 from utils.helpers import export_csv
 
 reports_bp = Blueprint('reports', __name__, url_prefix='/reportes')
@@ -8,12 +8,14 @@ reports_bp = Blueprint('reports', __name__, url_prefix='/reportes')
 
 @reports_bp.route('/')
 @login_required
+@partner_or_admin_required
 def index():
     return render_template('reports/reportes.html')
 
 
 @reports_bp.route('/generar')
 @login_required
+@partner_or_admin_required
 def generar():
     tipo = request.args.get('tipo', '')
     fecha_inicio = request.args.get('fecha_inicio', '')
@@ -140,6 +142,7 @@ def generar():
 
     config = report_configs[tipo]
     datos = db.execute(config['query'], (fecha_inicio, fecha_fin)).fetchall()
+    db.close()
     datos_list = [dict(row) for row in datos]
 
     total = sum(row.get('total', row.get('valor', row.get('monto', 0)) or 0) for row in datos_list)
@@ -158,6 +161,7 @@ def generar():
 
 @reports_bp.route('/exportar')
 @login_required
+@partner_or_admin_required
 def exportar():
     tipo = request.args.get('tipo', '')
     fecha_inicio = request.args.get('fecha_inicio', '')
@@ -284,6 +288,7 @@ def exportar():
 
     config = report_configs[tipo]
     datos = db.execute(config['query'], (fecha_inicio, fecha_fin)).fetchall()
+    db.close()
     datos_list = [dict(row) for row in datos]
 
     return export_csv(datos_list, config['columns'], config['filename'])

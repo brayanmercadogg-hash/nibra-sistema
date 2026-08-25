@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from database.db import get_db
-from utils.decorators import login_required, admin_required
+from utils.decorators import login_required, admin_required, partner_or_admin_required
 
 sales_team = Blueprint('sales_team', __name__, url_prefix='/equipo-ventas')
 
@@ -97,9 +97,17 @@ def vendedor_eliminar(id):
     if not vendedor:
         flash('Vendedor no encontrado', 'error')
     else:
-        db.execute("DELETE FROM vendedores WHERE id = ?", (id,))
-        db.commit()
-        flash('Vendedor eliminado correctamente', 'success')
+        try:
+            # Las comisiones del vendedor se eliminan con el; las ventas se conservan sin vendedor asignado
+            db.execute("DELETE FROM comisiones WHERE vendedor_id = ?", (id,))
+            db.execute("UPDATE ventas SET vendedor_id = NULL WHERE vendedor_id = ?", (id,))
+            db.execute("UPDATE usuarios SET estado = 'INACTIVO' WHERE id = ? AND rol = 'VENDEDOR'", (vendedor['usuario_id'],)) if vendedor['usuario_id'] else None
+            db.execute("DELETE FROM vendedores WHERE id = ?", (id,))
+            db.commit()
+            flash('Vendedor eliminado correctamente', 'success')
+        except Exception as e:
+            print(f"ERROR eliminar vendedor: {e}")
+            flash('Error al eliminar el vendedor', 'error')
     db.close()
     return redirect(url_for('sales_team.vendedores'))
 
@@ -111,6 +119,20 @@ def comisiones():
     vendedor_id = request.args.get('vendedor_id', '')
     fecha_inicio = request.args.get('fecha_inicio', '')
     fecha_fin = request.args.get('fecha_fin', '')
+
+    solo_propio = False
+    if session.get('rol') == 'VENDEDOR':
+        # Los vendedores solo ven sus propias comisiones
+        propio = db.execute(
+            "SELECT id FROM vendedores WHERE usuario_id = ? LIMIT 1",
+            (session['user_id'],)
+        ).fetchone()
+        if not propio:
+            db.close()
+            flash('Tu usuario no esta vinculado a un perfil de vendedor', 'warning')
+            return redirect(url_for('main.dashboard'))
+        vendedor_id = str(propio['id'])
+        solo_propio = True
 
     query = """
         SELECT v.id, v.nombre, v.porcentaje_comision,
@@ -160,11 +182,12 @@ def comisiones():
         })
 
     vendedores = db.execute("SELECT id, nombre FROM vendedores ORDER BY nombre").fetchall()
-    return render_template('sales_team/comisiones.html', comisiones=comisiones_list, vendedores=vendedores, vendedor_id=vendedor_id, fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+    return render_template('sales_team/comisiones.html', comisiones=comisiones_list, vendedores=vendedores, vendedor_id=vendedor_id, fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, solo_propio=solo_propio)
 
 
 @sales_team.route('/comisiones/pagar/<int:comision_id>', methods=['POST'])
 @login_required
+@partner_or_admin_required
 def comision_pagar(comision_id):
     db = get_db()
     resumen_id = request.form.get('vendedor_id')

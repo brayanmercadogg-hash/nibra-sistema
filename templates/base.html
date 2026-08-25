@@ -70,9 +70,16 @@
                 <a href="{{ url_for('transactions.ventas_list') }}" class="nav-item {% if request.endpoint and 'venta' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-file-invoice"></i><span>Ventas</span>
                 </a>
+                {% if rol != 'VENDEDOR' %}
                 <a href="{{ url_for('transactions.cuentas_cobrar_list') }}" class="nav-item {% if request.endpoint and 'cuenta' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-file-invoice-dollar"></i><span>Cuentas por Cobrar</span>
                 </a>
+                {% endif %}
+                {% if rol == 'VENDEDOR' %}
+                <a href="{{ url_for('solicitudes.mis') }}" class="nav-item {% if request.endpoint and 'solicitud' in request.endpoint %}active{% endif %}">
+                    <i class="fas fa-paper-plane"></i><span>Mis Solicitudes</span>
+                </a>
+                {% endif %}
 
                 {% if rol != 'VENDEDOR' %}
                 <div class="nav-section-title">Finanzas</div>
@@ -103,6 +110,16 @@
                 </a>
                 <a href="{{ url_for('sales_team.vendedores') }}" class="nav-item {% if request.endpoint == 'sales_team.vendedores' %}active{% endif %}">
                     <i class="fas fa-user-tie"></i><span>Vendedores</span>
+                </a>
+                <a href="{{ url_for('solicitudes.bandeja') }}" class="nav-item {% if request.endpoint and 'solicitud' in request.endpoint %}active{% endif %}">
+                    <i class="fas fa-inbox"></i><span>Solicitudes</span>
+                    {% if solicitudes_pendientes %}
+                        <span class="badge badge-warning" style="margin-left:auto;">{{ solicitudes_pendientes }}</span>
+                    {% endif %}
+                </a>
+                {% elif rol == 'SOCIO' %}
+                <a href="{{ url_for('solicitudes.bandeja') }}" class="nav-item {% if request.endpoint and 'solicitud' in request.endpoint %}active{% endif %}">
+                    <i class="fas fa-inbox"></i><span>Solicitudes</span>
                 </a>
                 {% endif %}
                 <a href="{{ url_for('sales_team.comisiones') }}" class="nav-item {% if request.endpoint == 'sales_team.comisiones' %}active{% endif %}">

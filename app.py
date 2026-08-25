@@ -3,7 +3,7 @@ import secrets
 from flask import Flask, redirect, url_for, session, render_template, send_from_directory, request, g
 from flask_wtf.csrf import CSRFProtect
 from config import Config
-from database.db import init_db, seed_admin
+from database.db import init_db, seed_admin, get_db
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -31,7 +31,16 @@ def set_security_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-XSS-Protection'] = '1; mode=block'
+    # Evita que el navegador muestre versiones viejas de las paginas tras un deploy
+    ctype = response.headers.get('Content-Type', '')
+    if ctype.startswith('text/html'):
+        response.headers['Cache-Control'] = 'no-store, must-revalidate'
     return response
+
+
+@app.errorhandler(413)
+def request_entity_too_large(e):
+    return render_template('errors/500.html'), 413
 
 
 from routes.auth import auth
@@ -44,6 +53,7 @@ from routes.partners import partners_bp
 from routes.sales_team import sales_team
 from routes.reports import reports_bp
 from routes.public import public_bp
+from routes.solicitudes import solicitudes_bp
 
 app.register_blueprint(auth)
 app.register_blueprint(main)
@@ -55,6 +65,7 @@ app.register_blueprint(partners_bp)
 app.register_blueprint(sales_team)
 app.register_blueprint(reports_bp)
 app.register_blueprint(public_bp)
+app.register_blueprint(solicitudes_bp)
 
 
 @app.route('/redirect-to-catalog')
@@ -81,13 +92,24 @@ def currency_filter(value):
 
 @app.context_processor
 def inject_user():
-    return {
+    ctx = {
         'current_user': {
             'id': session.get('user_id'),
             'nombre': session.get('nombre'),
             'rol': session.get('rol')
         } if 'user_id' in session else None
     }
+    if session.get('rol') == 'ADMIN':
+        try:
+            db = get_db()
+            row = db.execute(
+                "SELECT COUNT(*) AS cnt FROM solicitudes_productos WHERE estado = 'PENDIENTE'"
+            ).fetchone()
+            db.close()
+            ctx['solicitudes_pendientes'] = row['cnt'] if row else 0
+        except Exception:
+            ctx['solicitudes_pendientes'] = 0
+    return ctx
 
 
 @app.errorhandler(404)

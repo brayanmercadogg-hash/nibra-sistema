@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Panel{% endblock %}
+{% block page_title %}Mi Panel de Ventas{% endblock %}
+
+{% block content %}
+<div class="dash-welcome">
+    <div class="dash-welcome-text">
+        <h2>Bienvenido, {{ current_user.nombre }}</h2>
+        <p>Aqui encontraras el resumen de tus ventas</p>
+    </div>
+    <div class="dash-welcome-right">
+        <span class="dash-welcome-role">{{ current_user.rol }}</span>
+        <div class="dash-welcome-icon">
+            <i class="fas fa-user-tie"></i>
+        </div>
+    </div>
+</div>
+
+{% if not vendedor %}
+    <div class="alert alert-warning">
+        Tu usuario no esta vinculado a un perfil de vendedor. Contacta al administrador para vincularlo.
+    </div>
+{% else %}
+<div class="dash-section-title"><i class="fas fa-chart-line"></i> Mi Resumen del Mes</div>
+<div class="dash-kpi-grid">
+    <div class="dash-kpi-card">
+        <div class="dash-kpi-top">
+            <div class="dash-kpi-icon blue"><i class="fas fa-shopping-bag"></i></div>
+        </div>
+        <div class="dash-kpi-value">{{ stats.mes|currency }}</div>
+        <div class="dash-kpi-label">Mis Ventas del Mes</div>
+        <div class="dash-kpi-sub">Hoy: {{ stats.hoy|currency }}</div>
+    </div>
+
+    <div class="dash-kpi-card">
+        <div class="dash-kpi-top">
+            <div class="dash-kpi-icon purple"><i class="fas fa-receipt"></i></div>
+        </div>
+        <div class="dash-kpi-value">{{ stats.cantidad_mes }}</div>
+        <div class="dash-kpi-label">Ventas Realizadas (mes)</div>
+    </div>
+
+    <div class="dash-kpi-card">
+        <div class="dash-kpi-top">
+            <div class="dash-kpi-icon orange"><i class="fas fa-clock"></i></div>
+        </div>
+        <div class="dash-kpi-value">{{ stats.pendiente|currency }}</div>
+        <div class="dash-kpi-label">Pendiente por Cobrar</div>
+    </div>
+
+    {% if vendedor.porcentaje_comision is not none %}
+    <div class="dash-kpi-card">
+        <div class="dash-kpi-top">
+            <div class="dash-kpi-icon green"><i class="fas fa-percent"></i></div>
+        </div>
+        <div class="dash-kpi-value">{{ vendedor.porcentaje_comision }}%</div>
+        <div class="dash-kpi-label">Mi Comision</div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="dash-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+    <span><i class="fas fa-file-invoice"></i> Mis Ventas Recientes</span>
+    <a href="{{ url_for('transactions.ventas_list') }}" class="btn btn-outline btn-sm">
+        Ver todas <i class="fas fa-arrow-right"></i>
+    </a>
+</div>
+
+{% if ventas %}
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Codigo</th>
+                <th>Cliente</th>
+                <th>Total</th>
+                <th>Pagado</th>
+                <th>Saldo</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for v in ventas %}
+            <tr>
+                <td>{{ v.fecha }}</td>
+                <td>{{ v.codigo }}</td>
+                <td>{{ v.cliente_nombre or 'Consumidor Final' }}</td>
+                <td>{{ v.total|currency }}</td>
+                <td>{{ v.pagado|currency }}</td>
+                <td>{{ v.saldo|currency }}</td>
+                <td>
+                    {% if v.saldo <= 0 %}
+                        <span class="badge badge-success">Pagada</span>
+                    {% elif v.pagado > 0 %}
+                        <span class="badge badge-warning">Parcial</span>
+                    {% else %}
+                        <span class="badge badge-danger">Pendiente</span>
+                    {% endif %}
+                </td>
+                <td><a href="{{ url_for('transactions.venta_detalle', id=v.id) }}" class="btn btn-sm btn-outline">Ver</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-file-invoice"></i>
+        <h3>Sin ventas todavia</h3>
+        <p>Cuando registres tu primera venta aparecera aqui.</p>
+    </div>
+{% endif %}
+{% endif %}
+{% endblock %}

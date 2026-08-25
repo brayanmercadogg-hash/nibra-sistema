@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import get_db
 from utils.decorators import login_required, admin_required
-from utils.helpers import validate_password
+from utils.helpers import validate_password, get_vendedor_del_usuario
 
 main = Blueprint('main', __name__)
 
@@ -10,6 +10,68 @@ main = Blueprint('main', __name__)
 @main.route('/')
 @login_required
 def dashboard():
+    if session.get('rol') == 'VENDEDOR':
+        return _dashboard_vendedor()
+    return _dashboard_general()
+
+
+def _dashboard_vendedor():
+    """Vista para vendedores: solo sus propias ventas, sin info general de la empresa."""
+    from datetime import date
+    db = get_db()
+    vendedor = get_vendedor_del_usuario(db, session['user_id'])
+
+    ventas = []
+    stats = {'hoy': 0, 'mes': 0, 'cantidad_mes': 0, 'pendiente': 0}
+    if vendedor:
+        vid = vendedor['id']
+        today = date.today().isoformat()
+        first_of_month = date.today().replace(day=1).isoformat()
+
+        row = db.execute(
+            "SELECT COALESCE(SUM(total), 0) AS t FROM ventas WHERE vendedor_id = ? AND fecha = ?",
+            (vid, today)
+        ).fetchone()
+        stats['hoy'] = row['t']
+
+        row = db.execute(
+            "SELECT COALESCE(SUM(total), 0) AS t FROM ventas WHERE vendedor_id = ? AND fecha >= ?",
+            (vid, first_of_month)
+        ).fetchone()
+        stats['mes'] = row['t']
+
+        row = db.execute(
+            "SELECT COUNT(*) AS c FROM ventas WHERE vendedor_id = ? AND fecha >= ?",
+            (vid, first_of_month)
+        ).fetchone()
+        stats['cantidad_mes'] = row['c']
+
+        row = db.execute(
+            "SELECT COALESCE(SUM(saldo), 0) AS t FROM ventas WHERE vendedor_id = ? AND saldo > 0",
+            (vid,)
+        ).fetchone()
+        stats['pendiente'] = row['t']
+
+        ventas = db.execute(
+            '''SELECT v.*, c.nombre as cliente_nombre
+               FROM ventas v
+               LEFT JOIN clientes c ON v.cliente_id = c.id
+               WHERE v.vendedor_id = ?
+               ORDER BY v.created_at DESC
+               LIMIT 50''',
+            (vid,)
+        ).fetchall()
+
+    db.close()
+    return render_template(
+        'main/dashboard_vendedor.html',
+        vendedor=vendedor,
+        ventas=ventas,
+        stats=stats
+    )
+
+
+def _dashboard_general():
     db = get_db()
     from datetime import date, datetime
 
@@ -360,10 +422,12 @@ def usuarios():
                 return redirect(url_for('main.usuarios'))
 
             try:
+                db.execute("UPDATE vendedores SET usuario_id = NULL WHERE usuario_id = ?", (user_id,))
                 db.execute("DELETE FROM usuarios WHERE id = ?", (user_id,))
                 db.commit()
                 flash('Usuario eliminado correctamente', 'success')
-            except Exception:
+            except Exception as e:
+                print(f"ERROR eliminar usuario: {e}")
                 flash('Error al eliminar el usuario', 'danger')
 
         db.close()
@@ -375,3 +439,65 @@ def usuarios():
     db.close()
 
     return render_template('main/usuarios.html', users=users)
+
+
+@main.route('/usuarios/editar/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def usuarios_editar(user_id):
+    db = get_db()
+    user = db.execute("SELECT * FROM usuarios WHERE id = ?", (user_id,)).fetchone()
+    if not user:
+        db.close()
+        flash('Usuario no encontrado', 'danger')
+        return redirect(url_for('main.usuarios'))
+
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+        nombre = request.form.get('nombre', '').strip()
+        email = request.form.get('email', '').strip()
+        rol = request.form.get('rol', 'VENDEDOR')
+
+        if not username or not nombre:
+            db.close()
+            flash('Los campos usuario y nombre son obligatorios', 'danger')
+            return redirect(url_for('main.usuarios_editar', user_id=user_id))
+
+        existing = db.execute(
+            "SELECT id FROM usuarios WHERE username = ? AND id != ?", (username, user_id)
+        ).fetchone()
+        if existing:
+            db.close()
+            flash('El nombre de usuario ya existe', 'danger')
+            return redirect(url_for('main.usuarios_editar', user_id=user_id))
+
+        try:
+            if password:
+                pwd_errors = validate_password(password)
+                if pwd_errors:
+                    db.close()
+                    flash('Contraseña insegura: ' + '; '.join(pwd_errors), 'danger')
+                    return redirect(url_for('main.usuarios_editar', user_id=user_id))
+                db.execute(
+                    "UPDATE usuarios SET username = ?, password_hash = ?, nombre = ?, email = ?, rol = ? WHERE id = ?",
+                    (username, generate_password_hash(password), nombre, email, rol, user_id)
+                )
+            else:
+                db.execute(
+                    "UPDATE usuarios SET username = ?, nombre = ?, email = ?, rol = ? WHERE id = ?",
+                    (username, nombre, email, rol, user_id)
+                )
+            db.commit()
+            flash('Usuario actualizado correctamente', 'success')
+        except Exception:
+            flash('Error al actualizar el usuario', 'danger')
+        finally:
+            db.close()
+        return redirect(url_for('main.usuarios'))
+
+    users = db.execute(
+        "SELECT id, username, nombre, email, rol, estado, created_at FROM usuarios ORDER BY created_at DESC"
+    ).fetchall()
+    db.close()
+    return render_template('main/usuarios.html', users=users, editing=user)
