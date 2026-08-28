@@ -105,17 +105,15 @@ def _internal_export():
     import json as _json
     db = get_db()
     if Config.DATABASE.startswith('postgresql'):
-        tables = [
-            r['tablename'] for r in db.execute(
-                "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
-            )
-        ]
+        cur_tablas = db.execute(
+            "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
+        )
+        tables = [r['tablename'] for r in cur_tablas.fetchall()]
     else:
-        tables = [
-            r['name'] for r in db.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
-            )
-        ]
+        cur_tablas = db.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+        )
+        tables = [r['name'] for r in cur_tablas.fetchall()]
 
     def conv(v):
         if v is None:
