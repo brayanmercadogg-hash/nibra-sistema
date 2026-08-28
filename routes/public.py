@@ -85,7 +85,7 @@ def catalogo():
         })
 
     return render_template(
-        'public/catalogo.html',
+        'publico/catalogo.html',
         productos=productos,
         imagenes_por_producto=imagenes_por_producto,
         datos_json=json.dumps(datos),
