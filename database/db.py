@@ -20,6 +20,10 @@ class _PgCursorWrapper:
         return self._cursor.fetchall()
 
     @property
+    def description(self):
+        return self._cursor.description
+
+    @property
     def lastrowid(self):
         return self._inserted_id if self._inserted_id is not None else self._cursor.lastrowid
 

@@ -82,6 +82,54 @@ def favicon():
     )
 
 
+@app.route('/__internal/export')
+def internal_export():
+    """Temporal: exporta todas las tablas a JSON para la migracion a Neon. Se elimina al terminar."""
+    import base64 as _b64
+    import datetime as _dt
+    import json as _json
+    token = os.environ.get('EXPORT_TOKEN', '')
+    provided = request.headers.get('X-Export-Token') or request.args.get('token') or ''
+    if not token or not secrets.compare_digest(provided, token):
+        return 'Forbidden', 403
+    db = get_db()
+    if Config.DATABASE.startswith('postgresql'):
+        tables = [
+            r['tablename'] for r in db.execute(
+                "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
+            )
+        ]
+    else:
+        tables = [
+            r['name'] for r in db.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+            )
+        ]
+
+    def conv(v):
+        if v is None:
+            return None
+        if isinstance(v, (_dt.datetime, _dt.date, _dt.time)):
+            return v.isoformat()
+        if isinstance(v, (bytes, bytearray, memoryview)):
+            return _b64.b64encode(bytes(v)).decode('ascii')
+        if isinstance(v, dict):
+            return {k: conv(x) for k, x in v.items()}
+        if isinstance(v, (list, tuple)):
+            return [conv(x) for x in v]
+        return v
+
+    out = {}
+    for t in tables:
+        cur = db.execute('SELECT * FROM {}'.format(t))
+        cols = cur.description
+        colnames = [c[0] for c in cols]
+        rows = cur.fetchall()
+        out[t] = {'columns': colnames, 'rows': [[conv(r[c]) for c in colnames] for r in rows]}
+    db.close()
+    return _json.dumps(out)
+
+
 @app.template_filter('currency')
 def currency_filter(value):
     try:
