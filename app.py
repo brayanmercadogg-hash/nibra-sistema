@@ -11,7 +11,11 @@ app.config.from_object(Config)
 if app.config.get('SECRET_KEY', '') == 'nibra-erp-secret-key-change-in-production':
     app.config['SECRET_KEY'] = secrets.token_hex(32)
 
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+try:
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+except OSError:
+    import tempfile
+    app.config['UPLOAD_FOLDER'] = tempfile.gettempdir()
 
 csrf = CSRFProtect(app)
 
@@ -80,63 +84,6 @@ def favicon():
         'favicon.ico',
         mimetype='image/x-icon'
     )
-
-
-@app.route('/__internal/export')
-def internal_export():
-    """Temporal: exporta todas las tablas a JSON para la migracion a Neon. Se elimina al terminar."""
-    import base64 as _b64
-    import datetime as _dt
-    import json as _json
-    token = os.environ.get('EXPORT_TOKEN', '')
-    provided = request.headers.get('X-Export-Token') or request.args.get('token') or ''
-    if not token or not secrets.compare_digest(provided, token):
-        return 'Forbidden', 403
-    try:
-        return _internal_export()
-    except Exception:
-        import traceback
-        return traceback.format_exc(), 500
-
-
-def _internal_export():
-    import base64 as _b64
-    import datetime as _dt
-    import json as _json
-    db = get_db()
-    if Config.DATABASE.startswith('postgresql'):
-        cur_tablas = db.execute(
-            "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
-        )
-        tables = [r['tablename'] for r in cur_tablas.fetchall()]
-    else:
-        cur_tablas = db.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
-        )
-        tables = [r['name'] for r in cur_tablas.fetchall()]
-
-    def conv(v):
-        if v is None:
-            return None
-        if isinstance(v, (_dt.datetime, _dt.date, _dt.time)):
-            return v.isoformat()
-        if isinstance(v, (bytes, bytearray, memoryview)):
-            return _b64.b64encode(bytes(v)).decode('ascii')
-        if isinstance(v, dict):
-            return {k: conv(x) for k, x in v.items()}
-        if isinstance(v, (list, tuple)):
-            return [conv(x) for x in v]
-        return v
-
-    out = {}
-    for t in tables:
-        cur = db.execute('SELECT * FROM {}'.format(t))
-        cols = cur.description
-        colnames = [c[0] for c in cols]
-        rows = cur.fetchall()
-        out[t] = {'columns': colnames, 'rows': [[conv(r[c]) for c in colnames] for r in rows]}
-    db.close()
-    return _json.dumps(out)
 
 
 @app.template_filter('currency')
