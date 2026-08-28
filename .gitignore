@@ -15,5 +15,6 @@ Thumbs.db
 *.egg-info/
 dist/
 build/
-.vercel
+.vercel/*
+!.vercel/project.json
 .env*
