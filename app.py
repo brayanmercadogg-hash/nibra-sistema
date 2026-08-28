@@ -92,6 +92,17 @@ def internal_export():
     provided = request.headers.get('X-Export-Token') or request.args.get('token') or ''
     if not token or not secrets.compare_digest(provided, token):
         return 'Forbidden', 403
+    try:
+        return _internal_export()
+    except Exception:
+        import traceback
+        return traceback.format_exc(), 500
+
+
+def _internal_export():
+    import base64 as _b64
+    import datetime as _dt
+    import json as _json
     db = get_db()
     if Config.DATABASE.startswith('postgresql'):
         tables = [
