@@ -349,6 +349,39 @@
             .catalogo-header { padding: 3rem 1.5rem 1.5rem; }
         }
         @media(max-width:560px){.catalogo-search{flex-direction:column !important;gap:8px !important}.catalogo-search-input{min-width:100% !important;max-width:100% !important}.catalogo-filters{flex-direction:column !important;gap:8px !important}.catalogo-search-select{width:100% !important}}
+
+        /* Boton flotante de WhatsApp */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: #25d366;
+            color: #fff;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.8rem 1.2rem;
+            border-radius: 50px;
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35);
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+        .whatsapp-float:hover {
+            background: #20bd5a;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(37, 211, 102, 0.45);
+            color: #fff;
+        }
+        .whatsapp-float i {
+            font-size: 1.5rem;
+        }
+        @media (max-width: 560px) {
+            .whatsapp-float { bottom: 1rem; right: 1rem; }
+        }
     </style>
 </head>
 <body>
@@ -509,5 +542,9 @@
             if (e.key === 'Escape') cerrarModal();
         });
     </script>
+
+    <a class="whatsapp-float" href="https://wa.me/573013992470?text=Hola%2C%20estoy%20interesado%20en%20sus%20productos" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+        <i class="fab fa-whatsapp"></i> Escríbenos
+    </a>
 </body>
 </html>
