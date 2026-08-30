@@ -98,15 +98,15 @@
                             {% if img.es_principal %}
                             <span class="badge badge-success">Principal</span>
                             {% else %}
-                            <form method="POST" action="{{ url_for('inventory.imagen_principal', img_id=img.id) }}" style="display:inline" onsubmit="return true">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-sm btn-outline" title="Hacer principal"><i class="fas fa-star"></i></button>
-                            </form>
+                            <button type="button" class="btn btn-sm btn-outline" title="Hacer principal"
+                                    onclick="accionImagen('{{ url_for('inventory.imagen_principal', img_id=img.id) }}', false)">
+                                <i class="fas fa-star"></i>
+                            </button>
                             {% endif %}
-                            <form method="POST" action="{{ url_for('inventory.eliminar_imagen', img_id=img.id) }}" style="display:inline" onsubmit="return confirm('¿Eliminar esta imagen?')">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-sm btn-danger" title="Eliminar"><i class="fas fa-trash"></i></button>
-                            </form>
+                            <button type="button" class="btn btn-sm btn-danger" title="Eliminar"
+                                    onclick="accionImagen('{{ url_for('inventory.eliminar_imagen', img_id=img.id) }}', true)">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
                     </div>
                     {% endfor %}
@@ -199,4 +199,14 @@
         {% endif %}
     </div>
 </div>
+<script>
+function accionImagen(url, confirmar) {
+    if (confirmar && !window.confirm('¿Eliminar esta imagen?')) return;
+    fetch(url, {method: 'POST'}).then(function(r) {
+        window.location.reload();
+    }).catch(function() {
+        alert('Error de red al procesar la imagen.');
+    });
+}
+</script>
 {% endblock %}
