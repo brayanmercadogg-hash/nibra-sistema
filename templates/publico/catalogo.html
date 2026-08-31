@@ -526,7 +526,7 @@
             .modal-galeria { padding: 1.5rem; }
         }
         @media (max-width: 560px) {
-            .catalogo-grid { grid-template-columns: 1fr; }
+            .catalogo-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
             .catalogo-search { flex-direction: column; align-items: stretch; }
             .catalogo-search-input,
             .catalogo-search-select { max-width: 100%; }
@@ -534,6 +534,17 @@
             .catalogo-brand h1 { font-size: 3rem; }
             .catalogo-search { gap: 0.5rem; }
             .whatsapp-float { bottom: 1rem; right: 1rem; }
+            .catalogo-wrapper { padding: 2rem 0.75rem 1.5rem; }
+            .catalogo-card-image { height: 170px; }
+            .catalogo-card-body { padding: 0.9rem; }
+            .catalogo-card-title { font-size: 1.05rem; }
+            .catalogo-card-price { font-size: 1.12rem; }
+            .catalogo-btn-detalle { padding: 0.35rem 0.7rem; font-size: 0.68rem; }
+            .catalogo-card-meta { font-size: 0.62rem; gap: 0.3rem; flex-wrap: wrap; }
+            .catalogo-card-footer { padding-top: 0.7rem; margin-top: 0.7rem; gap: 0.4rem; }
+        }
+        @media (max-width: 380px) {
+            .catalogo-grid { grid-template-columns: 1fr; }
         }
         @media(max-width:560px){.catalogo-search{flex-direction:column !important;gap:8px !important}.catalogo-search-input{min-width:100% !important;max-width:100% !important}.catalogo-filters{flex-direction:column !important;gap:8px !important}.catalogo-search-select{width:100% !important}}
     </style>
