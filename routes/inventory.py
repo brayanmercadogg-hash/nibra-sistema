@@ -121,8 +121,10 @@ def eliminar_categoria(id):
 @inventory_bp.route('/productos', methods=['GET'])
 @login_required
 def productos():
+    busqueda = request.args.get('busqueda', '').strip()
     db = get_db()
-    productos = db.execute('''
+
+    query = '''
         SELECT p.*, c.nombre as categoria_nombre,
                (SELECT pi.id FROM producto_imagenes pi
                 WHERE pi.producto_id = p.id
@@ -130,11 +132,22 @@ def productos():
                (SELECT COUNT(*) FROM producto_imagenes pi2 WHERE pi2.producto_id = p.id) AS total_imagenes
         FROM productos p
         LEFT JOIN categorias c ON p.categoria_id = c.id
-        ORDER BY p.nombre
-    ''').fetchall()
+    '''
+    params = []
+    if busqueda:
+        if busqueda.isdigit():
+            query += ' WHERE p.id = ? OR LOWER(p.nombre) LIKE LOWER(?) OR LOWER(p.codigo) LIKE LOWER(?)'
+            params.extend([int(busqueda), f'%{busqueda}%', f'%{busqueda}%'])
+        else:
+            query += ' WHERE LOWER(p.nombre) LIKE LOWER(?) OR LOWER(p.codigo) LIKE LOWER(?)'
+            params.extend([f'%{busqueda}%', f'%{busqueda}%'])
+    query += ' ORDER BY p.nombre'
+
+    productos = db.execute(query, params).fetchall()
     categorias = db.execute('SELECT * FROM categorias ORDER BY nombre').fetchall()
     db.close()
-    return render_template('inventory/productos.html', productos=productos, categorias=categorias)
+    return render_template('inventory/productos.html', productos=productos, categorias=categorias,
+                           busqueda=busqueda)
 
 @inventory_bp.route('/productos', methods=['POST'])
 @login_required
