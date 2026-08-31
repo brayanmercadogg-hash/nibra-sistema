@@ -29,6 +29,7 @@ def catalogo():
 
     busqueda = request.args.get('busqueda', '').strip()
     categoria_id = request.args.get('categoria_id', '').strip()
+    marca = request.args.get('marca', '').strip()
 
     query = '''
         SELECT p.id, p.codigo, p.nombre, p.descripcion, p.marca, p.precio_venta,
@@ -47,11 +48,19 @@ def catalogo():
         query += ' AND p.categoria_id = ?'
         params.append(categoria_id)
 
+    if marca:
+        query += ' AND LOWER(p.marca) = LOWER(?)'
+        params.append(marca)
+
     query += ' ORDER BY p.nombre'
 
     productos = db.execute(query, params).fetchall()
     categorias = db.execute(
         "SELECT id, nombre FROM categorias WHERE estado = 'ACTIVO' ORDER BY nombre"
+    ).fetchall()
+    marcas = db.execute(
+        "SELECT DISTINCT marca FROM productos WHERE estado = 'ACTIVO' "
+        "AND marca IS NOT NULL AND marca != '' ORDER BY marca"
     ).fetchall()
     db.close()
 
@@ -90,6 +99,8 @@ def catalogo():
         imagenes_por_producto=imagenes_por_producto,
         datos_json=json.dumps(datos),
         categorias=categorias,
+        marcas=marcas,
         busqueda=busqueda,
-        categoria_seleccionada=categoria_id
+        categoria_seleccionada=categoria_id,
+        marca_seleccionada=marca
     )
