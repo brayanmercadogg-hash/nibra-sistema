@@ -218,6 +218,39 @@
             box-shadow: 0 18px 45px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,175,95,0.12);
         }
         .catalogo-card:hover::before { opacity: 1; }
+
+        /* Animacion de entrada sutil al cargar (header, filtros, contador) */
+        @keyframes loadFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .catalogo-header { animation: loadFade 0.7s ease both; }
+        .catalogo-filters { animation: loadFade 0.7s ease 0.08s both; }
+        .catalogo-results, .catalogo-empty { animation: loadFade 0.5s ease both; }
+
+        /* Animacion de aparicion al hacer scroll */
+        .catalogo-card {
+            opacity: 0;
+            transform: translateY(22px);
+            transition: opacity 0.6s ease var(--delay, 0ms), transform 0.6s ease var(--delay, 0ms),
+                        border-color 0.22s ease, box-shadow 0.22s ease;
+        }
+        .catalogo-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .catalogo-card { opacity: 1; transform: none; }
+            .catalogo-card:hover { transform: none; }
+            .catalogo-card:hover .catalogo-card-image img { transform: none; }
+            .catalogo-header, .catalogo-filters, .catalogo-results, .catalogo-empty { animation: none; }
+            .modal-overlay.open { animation: none; }
+            .modal { animation: none; }
+        }
+        @media (max-width: 560px) {
+            .catalogo-card { transform: translateY(14px); }
+            .catalogo-card.visible { transform: translateY(0); }
+        }
         .catalogo-card-image {
             width: 100%;
             height: 225px;
@@ -373,7 +406,7 @@
             z-index: 1000;
             padding: 1rem;
         }
-        .modal-overlay.open { display: flex; }
+        .modal-overlay.open { display: flex; animation: modalFade 0.25s ease; }
         .modal {
             background: linear-gradient(180deg, var(--negro-2) 0%, var(--carbono) 100%);
             border: 1px solid rgba(212,175,95,0.35);
@@ -384,7 +417,10 @@
             overflow-y: auto;
             box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,175,95,0.08);
             position: relative;
+            animation: modalPop 0.28s ease;
         }
+        @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .modal::before {
             content: "";
             position: absolute;
@@ -751,6 +787,27 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') cerrarModal();
         });
+
+        /* Animacion sutil de aparicion al hacer scroll por los productos */
+        (function() {
+            var cards = document.querySelectorAll('.catalogo-card');
+            if (!('IntersectionObserver' in window) || !cards.length) {
+                cards.forEach(function(c) { c.classList.add('visible'); });
+                return;
+            }
+            cards.forEach(function(c, i) {
+                c.style.setProperty('--delay', Math.min(i % 6 * 60, 300) + 'ms');
+            });
+            var io = new IntersectionObserver(function(entries) {
+                entries.forEach(function(e) {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('visible');
+                        io.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+            cards.forEach(function(c) { io.observe(c); });
+        })();
     </script>
 
     <a class="whatsapp-float" href="https://wa.me/573013992470?text=Hola%2C%20estoy%20interesado%20en%20sus%20productos" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
