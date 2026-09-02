@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NIBRA - Iniciar Sesión</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo/logo.jpg') }}" type="image/jpeg">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo/logo.jpg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -38,12 +40,23 @@
             text-align: center;
         }
 
+        .login-logo-img {
+            display: block;
+            width: 84px;
+            height: 84px;
+            margin: 0 auto 14px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #e5e7eb;
+            box-shadow: 0 4px 14px rgba(0,0,0,.08);
+        }
         .login-logo {
             font-size: 24px;
             font-weight: 700;
             color: #09090b;
             letter-spacing: -0.5px;
             margin-bottom: 6px;
+            text-align: center;
         }
 
         .login-subtitle {
@@ -195,7 +208,7 @@
 <body>
     <div class="login-container">
         <div class="login-card">
-            <div class="login-logo">NIBRA</div>
+            <img src="{{ url_for('static', filename='img/logo/logo.jpg') }}" alt="Logo NIBRA" class="login-logo-img">
             <p class="login-subtitle">Sistema de Gestión Empresarial</p>
 
             <div class="flash-area">

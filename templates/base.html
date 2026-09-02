@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NIBRA — {% block title %}Sistema{% endblock %}</title>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='img/logo/logo.jpg') }}" type="image/jpeg">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo/logo.jpg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -28,7 +29,7 @@
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h2 class="sidebar-logo"><i class="fas fa-cube"></i> NIBRA</h2>
+                <h2 class="sidebar-logo"><img src="{{ url_for('static', filename='img/logo/logo.jpg') }}" alt="Logo NIBRA" class="sidebar-logo-img"></h2>
                 <button class="sidebar-toggle" id="sidebarToggle">
                     <i class="fas fa-bars"></i>
                 </button>

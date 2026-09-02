@@ -4,7 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NIBRA - Catálogo de Productos</title>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='img/logo/logo.jpg') }}" type="image/jpeg">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo/logo.jpg') }}">
+    <meta name="description" content="Catálogo de productos de belleza, maquillaje, cuidado capilar, skincare y accesorios de NIBRA.">
+    <meta property="og:site_name" content="NIBRA">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="NIBRA - Catálogo de Productos">
+    <meta property="og:description" content="Descubre maquillaje, cuidado capilar, skincare y accesorios de belleza en el catálogo NIBRA.">
+    <meta property="og:image" content="{{ url_for('static', filename='img/logo/logo.jpg', _external=True) }}">
+    <meta property="og:image:alt" content="Logo de NIBRA">
+    <meta property="og:locale" content="es_ES">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="NIBRA - Catálogo de Productos">
+    <meta name="twitter:description" content="Maquillaje, cuidado capilar, skincare y accesorios de belleza.">
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/logo/logo.jpg', _external=True) }}">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "NIBRA",
+      "url": "https://nibra-erp.vercel.app/",
+      "image": "https://nibra-erp.vercel.app/static/img/logo/logo.jpg",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://nibra-erp.vercel.app/catalogo/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -62,19 +89,15 @@
             margin-bottom: 1.25rem;
             font-weight: 500;
         }
-        .catalogo-brand h1 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 4.25rem;
-            font-weight: 700;
-            line-height: 1;
-            letter-spacing: 0.18em;
-            text-indent: 0.18em;
-            background: linear-gradient(180deg, #f9ecc2 0%, var(--dorado) 45%, var(--dorado-oscuro) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: var(--dorado);
-            filter: drop-shadow(0 4px 18px rgba(212,175,95,0.25));
+        .catalogo-logo-img {
+            display: block;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 1.5rem;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--borde-suave);
+            box-shadow: 0 8px 30px rgba(212,175,95,0.20);
         }
         .catalogo-brand-line {
             display: flex;
@@ -90,6 +113,13 @@
             flex: 1;
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(212,175,95,0.55), transparent);
+        }
+        .catalogo-logo-tagline {
+            font-size: 0.875rem;
+            color: var(--texto-apagado);
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-top: 1rem;
         }
         .catalogo-brand-line i { color: var(--dorado); font-size: 0.8rem; }
         .catalogo-brand p {
@@ -567,7 +597,7 @@
             .catalogo-search-input,
             .catalogo-search-select { max-width: 100%; }
             .catalogo-header { padding: 4rem 1.25rem 2.5rem; }
-            .catalogo-brand h1 { font-size: 3rem; }
+            .catalogo-logo-img { width: 110px; height: 110px; }
             .catalogo-brand p { font-size: 0.8rem; }
             .catalogo-search { gap: 0.5rem; }
             .whatsapp-float { bottom: 1rem; right: 1rem; }
@@ -609,10 +639,9 @@
 <body>
     <header class="catalogo-header">
         <div class="catalogo-brand">
+            <img src="{{ url_for('static', filename='img/logo/logo.jpg') }}" alt="Logo NIBRA" class="catalogo-logo-img">
             <div class="catalogo-brand-eyebrow">Belleza &amp; Estilo</div>
-            <h1>NIBRA</h1>
-            <div class="catalogo-brand-line"><i class="fas fa-diamond"></i></div>
-            <p>Colección de productos</p>
+            <p class="catalogo-logo-tagline">Colección de productos</p>
         </div>
     </header>
 
