@@ -161,6 +161,7 @@ def init_db():
             descripcion TEXT,
             categoria_id INTEGER REFERENCES categorias(id),
             marca TEXT,
+            proveedor_id INTEGER REFERENCES proveedores(id),
             precio_compra REAL NOT NULL DEFAULT 0,
             precio_venta REAL NOT NULL DEFAULT 0,
             margen REAL DEFAULT 0,
@@ -367,6 +368,39 @@ def init_db():
             respuesta TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+        CREATE TABLE IF NOT EXISTS empresa (
+            id INTEGER PRIMARY KEY,
+            nombre TEXT NOT NULL DEFAULT 'NIBRA',
+            razon_social TEXT,
+            nit TEXT,
+            eslogan TEXT,
+            descripcion TEXT,
+            sobre_nosotros TEXT,
+            mision TEXT,
+            vision TEXT,
+            valores TEXT,
+            telefono TEXT,
+            whatsapp TEXT,
+            email TEXT,
+            direccion TEXT,
+            ciudad TEXT,
+            horarios TEXT,
+            cobertura TEXT,
+            instagram TEXT,
+            facebook TEXT,
+            anios_experiencia INTEGER DEFAULT 0,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS contacto_mensajes (
+            id SERIAL PRIMARY KEY,
+            nombre TEXT NOT NULL,
+            email TEXT,
+            telefono TEXT,
+            asunto TEXT,
+            mensaje TEXT NOT NULL,
+            estado TEXT NOT NULL DEFAULT 'NUEVO',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
         """)
         conn.commit()
     else:
@@ -397,13 +431,15 @@ def init_db():
             descripcion TEXT,
             categoria_id INTEGER,
             marca TEXT,
+            proveedor_id INTEGER,
             precio_compra REAL NOT NULL DEFAULT 0,
             precio_venta REAL NOT NULL DEFAULT 0,
             margen REAL DEFAULT 0,
             imagen TEXT,
             estado TEXT NOT NULL DEFAULT 'ACTIVO',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+            FOREIGN KEY (categoria_id) REFERENCES categorias(id),
+            FOREIGN KEY (proveedor_id) REFERENCES proveedores(id)
         );
         CREATE TABLE IF NOT EXISTS clientes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -552,10 +588,69 @@ def init_db():
             FOREIGN KEY (vendedor_id) REFERENCES vendedores(id),
             FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
         );
+        CREATE TABLE IF NOT EXISTS empresa (
+            id INTEGER PRIMARY KEY,
+            nombre TEXT NOT NULL DEFAULT 'NIBRA',
+            razon_social TEXT,
+            nit TEXT,
+            eslogan TEXT,
+            descripcion TEXT,
+            sobre_nosotros TEXT,
+            mision TEXT,
+            vision TEXT,
+            valores TEXT,
+            telefono TEXT,
+            whatsapp TEXT,
+            email TEXT,
+            direccion TEXT,
+            ciudad TEXT,
+            horarios TEXT,
+            cobertura TEXT,
+            instagram TEXT,
+            facebook TEXT,
+            anios_experiencia INTEGER DEFAULT 0,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS contacto_mensajes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            email TEXT,
+            telefono TEXT,
+            asunto TEXT,
+            mensaje TEXT NOT NULL,
+            estado TEXT NOT NULL DEFAULT 'NUEVO',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
         ''')
         conn.commit()
+    _migrar_proveedor_productos(conn)
     _migrar_imagenes_locales(conn)
     conn.close()
+
+
+def _migrar_proveedor_productos(conn):
+    """Agrega la columna proveedor_id a productos (DBs existentes) y asigna
+    el proveedor BERRY a los productos que no tienen proveedor registrado."""
+    try:
+        if _is_postgres():
+            col = conn.execute(
+                "SELECT 1 FROM information_schema.columns "
+                "WHERE table_name = 'productos' AND column_name = 'proveedor_id'"
+            ).fetchone()
+            if not col:
+                conn.execute("ALTER TABLE productos ADD COLUMN proveedor_id INTEGER REFERENCES proveedores(id)")
+        else:
+            cols = conn.execute("PRAGMA table_info(productos)").fetchall()
+            if not any(c['name'] == 'proveedor_id' for c in cols):
+                conn.execute("ALTER TABLE productos ADD COLUMN proveedor_id INTEGER REFERENCES proveedores(id)")
+        berry = conn.execute(
+            "SELECT id FROM proveedores WHERE UPPER(nombre) = 'BERRY' ORDER BY id LIMIT 1"
+        ).fetchone()
+        if berry:
+            conn.execute("UPDATE productos SET proveedor_id = ? WHERE proveedor_id IS NULL", (berry['id'],))
+        conn.commit()
+    except Exception as e:
+        print(f"WARNING: migracion de proveedor de productos fallo: {e}")
 
 
 def _migrar_imagenes_locales(conn):
@@ -620,3 +715,84 @@ def seed_admin():
                 )
     conn.commit()
     conn.close()
+
+
+EMPRESA_DEFAULTS = {
+    'nombre': 'NIBRA',
+    'eslogan': 'Belleza & Estilo',
+    'descripcion': (
+        'Distribuidora de productos de belleza, maquillaje, cuidado capilar y skincare. '
+        'Seleccionamos marcas de calidad para salones de belleza, farmacias y households '
+        'de todo el pais.'
+    ),
+    'sobre_nosotros': (
+        'NIBRA es una empresa colombiana dedicada a la distribucion y comercializacion de '
+        'productos de belleza, maquillaje, cuidado capilar, skincare y accesorios. Trabajamos '
+        'de la mano con los retailers mas cercanos para llevar producto de calidad a cada ciudad.'
+    ),
+    'whatsapp': '573013992470',
+    'horarios': 'Lunes a sabado, 8:00 a.m. a 6:00 p.m.',
+}
+
+EMPRESA_COLUMNAS = [
+    'id', 'nombre', 'razon_social', 'nit', 'eslogan', 'descripcion', 'sobre_nosotros',
+    'mision', 'vision', 'valores', 'telefono', 'whatsapp', 'email', 'direccion',
+    'ciudad', 'horarios', 'cobertura', 'instagram', 'facebook', 'anios_experiencia',
+]
+
+
+def seed_empresa():
+    """Crea la fila unica de la tabla empresa con los datos por defecto
+    (solo si no existe). Los datos reales se editan desde el ERP."""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM empresa WHERE id = 1")
+        if cur.fetchone():
+            return
+        d = EMPRESA_DEFAULTS
+        valores = {
+            'id': 1,
+            'nombre': d['nombre'],
+            'razon_social': d['nombre'],
+            'nit': '',
+            'eslogan': d['eslogan'],
+            'descripcion': d['descripcion'],
+            'sobre_nosotros': d['sobre_nosotros'],
+            'mision': '',
+            'vision': '',
+            'valores': '',
+            'telefono': '',
+            'whatsapp': d['whatsapp'],
+            'email': '',
+            'direccion': '',
+            'ciudad': '',
+            'horarios': d['horarios'],
+            'cobertura': '',
+            'instagram': '',
+            'facebook': '',
+            'anios_experiencia': 0,
+        }
+        columnas = ', '.join(EMPRESA_COLUMNAS)
+        signos = ', '.join(['?'] * len(EMPRESA_COLUMNAS))
+        conn.execute(
+            f'INSERT INTO empresa ({columnas}) VALUES ({signos})',
+            [valores[c] for c in EMPRESA_COLUMNAS]
+        )
+        conn.commit()
+    except Exception as e:
+        print(f"WARNING: seed de empresa fallo: {e}")
+    finally:
+        conn.close()
+
+
+def get_empresa():
+    """Devuelve los datos de la empresa (fila unica) o None si aun no existe."""
+    try:
+        conn = get_db()
+        row = conn.execute("SELECT * FROM empresa WHERE id = 1").fetchone()
+        conn.close()
+        return row
+    except Exception as e:
+        print(f"WARNING: no se pudo leer la informacion de la empresa: {e}")
+        return None

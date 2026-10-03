@@ -135,6 +135,10 @@
                 {% endif %}
 
                 {% if rol == 'ADMIN' %}
+                <div class="nav-section-title">Configuración</div>
+                <a href="{{ url_for('main.empresa_config') }}" class="nav-item {% if request.endpoint == 'main.empresa_config' %}active{% endif %}">
+                    <i class="fas fa-globe"></i><span>Info. Empresa</span>
+                </a>
                 <a href="{{ url_for('main.usuarios') }}" class="nav-item {% if request.endpoint == 'main.usuarios' %}active{% endif %}">
                     <i class="fas fa-gear"></i><span>Usuarios</span>
                 </a>
@@ -163,8 +167,8 @@
                     <h1>{% block page_title %}{% endblock %}</h1>
                 </div>
                 <div class="navbar-actions">
-                    <a href="{{ url_for('public.catalogo') }}" class="btn btn-outline btn-sm" target="_blank">
-                        <i class="fas fa-store"></i> Catálogo
+                    <a href="{{ url_for('public.inicio') }}" class="btn btn-outline btn-sm" target="_blank">
+                        <i class="fas fa-globe"></i> Sitio web
                     </a>
                 </div>
             </nav>

@@ -1,0 +1,504 @@
+{% extends 'publico/base.html' %}
+{% set nombre = empresa.nombre if empresa and empresa.nombre else 'NIBRA' %}
+{% set eslogan = empresa.eslogan if empresa and empresa.eslogan else 'Belleza & Estilo' %}
+{% set wa = (empresa.whatsapp if empresa and empresa.whatsapp else '573013992470')|replace(' ', '')|replace('+', '') %}
+
+{% block title %}Empresa — {{ nombre }}{% endblock %}
+{% block meta %}
+<meta name="description" content="Conoce {{ nombre }}: {{ eslogan }}. Informacion de la empresa, contacto, cobertura y catalogo de productos.">
+{% endblock %}
+{% block og_title %}Empresa — {{ nombre }} {{ eslogan }}{% endblock %}
+{% block og_description %}Informacion de la empresa, contacto, cobertura y catalogo de productos de {{ nombre }}.{% endblock %}
+
+{% block styles %}
+<style>
+    /* ===== Encabezado de pagina ===== */
+    .pagina-hero {
+        position: relative;
+        text-align: center;
+        padding: 4.25rem 1.5rem 3.5rem;
+        overflow: hidden;
+    }
+    .pagina-hero::before {
+        content: "";
+        position: absolute;
+        top: -200px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 640px;
+        height: 640px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(212,175,95,0.12) 0%, transparent 62%);
+        pointer-events: none;
+    }
+    .pagina-hero h1 {
+        position: relative;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2.2rem, 6vw, 3.75rem);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        line-height: 1.1;
+    }
+    .pagina-hero p {
+        position: relative;
+        margin: 1.25rem auto 0;
+        max-width: 620px;
+        color: var(--texto-apagado);
+        font-size: 0.975rem;
+    }
+
+    /* ===== Sobre nosotros ===== */
+    .sobre-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 3rem;
+        align-items: start;
+    }
+    .sobre-texto {
+        color: var(--texto-suave);
+        font-size: 0.9875rem;
+        line-height: 1.9;
+        white-space: pre-line;
+    }
+    .sobre-texto p { margin-bottom: 1.1rem; }
+    .datos-ficha {
+        background: linear-gradient(180deg, var(--superficie) 0%, var(--carbono) 100%);
+        border: 1px solid var(--borde);
+        border-radius: 16px;
+        padding: 1.75rem;
+    }
+    .datos-ficha h3 {
+        font-size: 0.7rem;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        color: var(--dorado-suave);
+        margin-bottom: 1.35rem;
+        font-weight: 600;
+    }
+    .datos-ficha dl { display: grid; gap: 1.05rem; }
+    .datos-ficha dt {
+        font-size: 0.68rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--texto-apagado);
+        margin-bottom: 0.2rem;
+    }
+    .datos-ficha dd { font-size: 0.9rem; color: var(--texto); word-break: break-word; }
+
+    /* ===== Pilares (mision / vision / valores) ===== */
+    .pilares-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.4rem;
+        margin-top: 2.75rem;
+    }
+    .pilar {
+        padding: 2rem 1.75rem;
+        background: linear-gradient(180deg, var(--superficie) 0%, var(--carbono) 100%);
+        border: 1px solid var(--borde);
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.22s ease, transform 0.22s ease;
+    }
+    .pilar::after {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--dorado), transparent);
+        opacity: 0.5;
+    }
+    .pilar:hover { transform: translateY(-4px); border-color: rgba(212,175,95,0.45); }
+    .pilar i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(212,175,95,0.1);
+        border: 1px solid var(--borde-suave);
+        color: var(--dorado);
+        margin-bottom: 1.1rem;
+    }
+    .pilar h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.7rem;
+    }
+    .pilar p { font-size: 0.9rem; color: var(--texto-apagado); line-height: 1.75; white-space: pre-line; }
+
+    /* ===== Contacto ===== */
+    .contacto-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.15fr;
+        gap: 2.5rem;
+        align-items: start;
+    }
+    .contacto-info { display: grid; gap: 0.9rem; }
+    .contacto-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.2rem 1.35rem;
+        background: linear-gradient(180deg, var(--superficie) 0%, var(--carbono) 100%);
+        border: 1px solid var(--borde);
+        border-radius: 13px;
+        transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .contacto-item:hover { border-color: rgba(212,175,95,0.45); transform: translateX(3px); }
+    .contacto-item i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: 11px;
+        background: rgba(212,175,95,0.1);
+        border: 1px solid var(--borde-suave);
+        color: var(--dorado);
+    }
+    .contacto-item span {
+        display: block;
+        font-size: 0.66rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--texto-apagado);
+        margin-bottom: 0.15rem;
+    }
+    .contacto-item a,
+    .contacto-item p { font-size: 0.9rem; color: var(--texto); }
+    .contacto-item a:hover { color: var(--dorado-claro); }
+
+    .contacto-form {
+        background: linear-gradient(180deg, var(--superficie) 0%, var(--carbono) 100%);
+        border: 1px solid var(--borde);
+        border-radius: 16px;
+        padding: 2rem 1.85rem;
+    }
+    .contacto-form h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.6rem;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+    }
+    .contacto-form > p {
+        font-size: 0.85rem;
+        color: var(--texto-apagado);
+        margin-bottom: 1.6rem;
+    }
+
+    .cobertura-panel {
+        margin-top: 1.5rem;
+        padding: 1.5rem 1.6rem;
+        border: 1px dashed var(--borde-suave);
+        border-radius: 14px;
+        background: rgba(212,175,95,0.04);
+    }
+    .cobertura-panel h4 {
+        font-size: 0.7rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--dorado-suave);
+        margin-bottom: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+        .sobre-grid,
+        .contacto-grid { grid-template-columns: 1fr; gap: 2rem; }
+        .pilares-grid { grid-template-columns: 1fr; gap: 1rem; }
+        .pilar { padding: 1.6rem 1.4rem; }
+    }
+    @media (max-width: 560px) {
+        .pagina-hero { padding: 3.25rem 1.1rem 2.5rem; }
+        .contacto-form { padding: 1.5rem 1.2rem; }
+        .contacto-item { padding: 1rem 1.1rem; gap: 0.85rem; }
+        .contacto-item i { width: 36px; height: 36px; }
+        .datos-ficha { padding: 1.4rem 1.2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="pagina-hero">
+    <p class="eyebrow">{{ eslogan }}</p>
+    <h1>Nuestra empresa</h1>
+    {% if empresa and empresa.descripcion %}
+    <p>{{ empresa.descripcion }}</p>
+    {% endif %}
+</section>
+
+<!-- Sobre nosotros + ficha de datos -->
+<section class="publico-seccion" style="padding-top:0.5rem">
+    <div class="sobre-grid">
+        <div class="reveal">
+            <p class="eyebrow">Sobre {{ nombre }}</p>
+            <h2 class="seccion-titulo">Distribucion de belleza con criterio</h2>
+            <div class="divider-line" style="margin-left:0"><i class="fas fa-diamond"></i></div>
+            <div class="sobre-texto">
+                {% if empresa and empresa.sobre_nosotros %}
+                <p>{{ empresa.sobre_nosotros }}</p>
+                {% endif %}
+                {% if empresa and empresa.mision %}
+                <p><strong style="color:var(--dorado-claro)">Mision:</strong> {{ empresa.mision }}</p>
+                {% endif %}
+                {% if empresa and empresa.vision %}
+                <p><strong style="color:var(--dorado-claro)">Vision:</strong> {{ empresa.vision }}</p>
+                {% endif %}
+            </div>
+            {% if valores %}
+            <div class="chips" style="margin-top:1.5rem">
+                {% for v in valores %}
+                <span class="chip"><i class="fas fa-check"></i> {{ v }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <aside class="datos-ficha reveal" style="--delay:100ms">
+            <h3>Datos de la empresa</h3>
+            <dl>
+                <div>
+                    <dt>Nombre comercial</dt>
+                    <dd>{{ nombre }}</dd>
+                </div>
+                {% if empresa and empresa.razon_social and empresa.razon_social != nombre %}
+                <div>
+                    <dt>Razon social</dt>
+                    <dd>{{ empresa.razon_social }}</dd>
+                </div>
+                {% endif %}
+                {% if empresa and empresa.nit %}
+                <div>
+                    <dt>NIT</dt>
+                    <dd>{{ empresa.nit }}</dd>
+                </div>
+                {% endif %}
+                {% if empresa and empresa.ciudad or empresa and empresa.direccion %}
+                <div>
+                    <dt>Ubicacion</dt>
+                    <dd>{{ empresa.direccion or '' }}{% if empresa.direccion and empresa.ciudad %}, {% endif %}{{ empresa.ciudad or '' }}</dd>
+                </div>
+                {% endif %}
+                {% if empresa and empresa.anios_experiencia %}
+                <div>
+                    <dt>Anos de experiencia</dt>
+                    <dd>{{ empresa.anios_experiencia }} anos</dd>
+                </div>
+                {% endif %}
+                {% if total_productos %}
+                <div>
+                    <dt>Productos en catalogo</dt>
+                    <dd>{{ total_productos }} productos</dd>
+                </div>
+                {% endif %}
+            </dl>
+            <div style="margin-top:1.6rem">
+                <a href="https://wa.me/{{ wa }}?text=Hola%2C%20quiero%20informacion%20sobre%20sus%20productos" class="btn btn-wa" style="width:100%" target="_blank" rel="noopener">
+                    <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
+                </a>
+            </div>
+        </aside>
+    </div>
+</section>
+
+{% if empresa and (empresa.mision or empresa.vision or empresa.valores) %}
+<!-- Mision / Vision / Valores -->
+<section class="publico-seccion" style="padding-top:0">
+    <div class="publico-seccion-centrada reveal">
+        <p class="eyebrow">Lo que nos guia</p>
+        <h2 class="seccion-titulo">Mision, vision y valores</h2>
+        <div class="divider-line"><i class="fas fa-diamond"></i></div>
+    </div>
+    <div class="pilares-grid">
+        {% if empresa.mision %}
+        <article class="pilar reveal">
+            <i class="fas fa-bullseye"></i>
+            <h3>Mision</h3>
+            <p>{{ empresa.mision }}</p>
+        </article>
+        {% endif %}
+        {% if empresa.vision %}
+        <article class="pilar reveal" style="--delay:80ms">
+            <i class="fas fa-eye"></i>
+            <h3>Vision</h3>
+            <p>{{ empresa.vision }}</p>
+        </article>
+        {% endif %}
+        {% if empresa.valores %}
+        <article class="pilar reveal" style="--delay:160ms">
+            <i class="fas fa-gem"></i>
+            <h3>Valores</h3>
+            <p>{{ empresa.valores }}</p>
+        </article>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Catalogo integrado: categorias con conteo -->
+{% if categorias %}
+<section class="publico-seccion" style="padding-top:0">
+    <div class="publico-seccion-centrada reveal">
+        <p class="eyebrow">Catalogo</p>
+        <h2 class="seccion-titulo">Nuestras categorias</h2>
+        <div class="divider-line"><i class="fas fa-diamond"></i></div>
+        <p class="seccion-subtitulo">
+            {{ total_productos }} productos activos en {{ total_categorias }} categorias.
+            Selecciona una para ver el detalle en el catalogo.
+        </p>
+    </div>
+    <div class="categoria-grid">
+        {% for cat in categorias %}
+        {% if cat.total %}
+        <a href="{{ url_for('public.catalogo', categoria_id=cat.id) }}" class="categoria-card reveal">
+            <div>
+                <h3>{{ cat.nombre }}</h3>
+                {% if cat.descripcion %}<p>{{ cat.descripcion }}</p>{% endif %}
+            </div>
+            <div class="categoria-card-meta">
+                <span>{{ cat.total }} producto{{ 's' if cat.total != 1 else '' }}</span>
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </a>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <div style="text-align:center; margin-top:2.5rem">
+        <a href="{{ url_for('public.catalogo') }}" class="btn btn-dorado"><i class="fas fa-gem"></i> Ir al catalogo completo</a>
+    </div>
+</section>
+{% endif %}
+
+<!-- Contacto y cobertura -->
+<section class="publico-seccion" id="contacto" style="padding-top:0">
+    <div class="publico-seccion-centrada reveal">
+        <p class="eyebrow">Contacto</p>
+        <h2 class="seccion-titulo">Hablemos</h2>
+        <div class="divider-line"><i class="fas fa-diamond"></i></div>
+        <p class="seccion-subtitulo">
+            Escribenos y te respondemos lo antes posible. Tambien atendemos pedidos por WhatsApp.
+        </p>
+    </div>
+
+    <div class="contacto-grid">
+        <div class="contacto-info reveal">
+            {% if empresa and empresa.telefono %}
+            <div class="contacto-item">
+                <i class="fas fa-phone"></i>
+                <div>
+                    <span>Telefono</span>
+                    <a href="tel:{{ empresa.telefono }}">{{ empresa.telefono }}</a>
+                </div>
+            </div>
+            {% endif %}
+            {% if empresa and empresa.whatsapp %}
+            <div class="contacto-item">
+                <i class="fab fa-whatsapp"></i>
+                <div>
+                    <span>WhatsApp</span>
+                    <a href="https://wa.me/{{ wa }}" target="_blank" rel="noopener">{{ empresa.whatsapp }}</a>
+                </div>
+            </div>
+            {% endif %}
+            {% if empresa and empresa.email %}
+            <div class="contacto-item">
+                <i class="fas fa-envelope"></i>
+                <div>
+                    <span>Correo electronico</span>
+                    <a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a>
+                </div>
+            </div>
+            {% endif %}
+            {% if empresa and (empresa.direccion or empresa.ciudad) %}
+            <div class="contacto-item">
+                <i class="fas fa-location-dot"></i>
+                <div>
+                    <span>Direccion</span>
+                    <p>{{ empresa.direccion or '' }}{% if empresa.direccion and empresa.ciudad %}, {% endif %}{{ empresa.ciudad or '' }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if empresa and empresa.horarios %}
+            <div class="contacto-item">
+                <i class="fas fa-clock"></i>
+                <div>
+                    <span>Horario de atencion</span>
+                    <p>{{ empresa.horarios }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if empresa and (empresa.instagram or empresa.facebook) %}
+            <div class="contacto-item">
+                <i class="fas fa-hashtag"></i>
+                <div>
+                    <span>Redes sociales</span>
+                    <p>
+                        {% if empresa.instagram %}<a href="{{ empresa.instagram }}" target="_blank" rel="noopener">Instagram</a>{% endif %}
+                        {% if empresa.instagram and empresa.facebook %} &nbsp;·&nbsp; {% endif %}
+                        {% if empresa.facebook %}<a href="{{ empresa.facebook }}" target="_blank" rel="noopener">Facebook</a>{% endif %}
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if ciudades %}
+            <div class="cobertura-panel">
+                <h4>Ciudades con cobertura</h4>
+                <div class="chips" style="margin-top:0">
+                    {% for c in ciudades %}
+                    <span class="chip"><i class="fas fa-map-marker-alt"></i> {{ c }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="contacto-form reveal" style="--delay:100ms">
+            <h3>Envia tu mensaje</h3>
+            <p>Completa el formulario y te contactamos por correo o WhatsApp.</p>
+            <form method="POST" action="{{ url_for('public.contacto') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-fila">
+                    <div class="form-campo">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" required maxlength="120" placeholder="Tu nombre">
+                    </div>
+                    <div class="form-campo">
+                        <label for="telefono">Telefono / WhatsApp</label>
+                        <input type="text" id="telefono" name="telefono" maxlength="40" placeholder="300 000 0000">
+                    </div>
+                </div>
+                <div class="form-fila">
+                    <div class="form-campo">
+                        <label for="email">Correo electronico</label>
+                        <input type="email" id="email" name="email" maxlength="120" placeholder="tucorreo@dominio.com">
+                    </div>
+                    <div class="form-campo">
+                        <label for="asunto">Asunto</label>
+                        <select id="asunto" name="asunto" maxlength="160">
+                            <option value="Precios por mayor">Precios por mayor</option>
+                            <option value="Disponibilidad de productos">Disponibilidad de productos</option>
+                            <option value="Distribucion y entregas">Distribucion y entregas</option>
+                            <option value="Quiero ser distribuidor">Quiero ser distribuidor</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-campo">
+                    <label for="mensaje">Mensaje</label>
+                    <textarea id="mensaje" name="mensaje" required maxlength="2000" placeholder="Cuentanos que necesitas..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-dorado" style="width:100%">
+                    <i class="fas fa-paper-plane"></i> Enviar mensaje
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

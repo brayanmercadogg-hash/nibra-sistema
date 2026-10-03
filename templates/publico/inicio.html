@@ -1,0 +1,471 @@
+{% extends 'publico/base.html' %}
+{% set nombre = empresa.nombre if empresa and empresa.nombre else 'NIBRA' %}
+{% set eslogan = empresa.eslogan if empresa and empresa.eslogan else 'Belleza & Estilo' %}
+{% set wa = (empresa.whatsapp if empresa and empresa.whatsapp else '573013992470')|replace(' ', '')|replace('+', '') %}
+
+{% block title %}{{ nombre }} — {{ eslogan }}{% endblock %}
+{% block meta %}
+<meta name="description" content="{{ empresa.descripcion if empresa and empresa.descripcion else 'NIBRA: distribuidora de productos de belleza, maquillaje, cuidado capilar y skincare. Consulta nuestro catalogo de productos.' }}">
+{% endblock %}
+{% block og_title %}{{ nombre }} — {{ eslogan }}{% endblock %}
+{% block og_description %}{{ empresa.descripcion if empresa and empresa.descripcion else 'Distribuidora de productos de belleza, cuidado capilar y skincare.' }}{% endblock %}
+{% block head_extra %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Store",
+  "name": {{ nombre|tojson }},
+  "url": {{ url_for('public.inicio', _external=True)|tojson }},
+  "image": {{ url_for('static', filename='img/logo/logo.jpg', _external=True)|tojson }},
+  "description": {{ (empresa.descripcion if empresa and empresa.descripcion else '')|tojson }}{% if empresa and empresa.telefono %},
+  "telephone": {{ empresa.telefono|tojson }}{% endif %}{% if empresa and empresa.email %},
+  "email": {{ empresa.email|tojson }}{% endif %}{% if empresa and empresa.direccion %},
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": {{ empresa.direccion|tojson }}{% if empresa.ciudad %},
+    "addressLocality": {{ empresa.ciudad|tojson }}{% endif %}
+  }{% endif %}{% if empresa and empresa.horarios %},
+  "openingHours": {{ empresa.horarios|tojson }}{% endif %}
+}
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* ===== Hero ===== */
+    .hero {
+        position: relative;
+        text-align: center;
+        padding: 5.5rem 1.5rem 4.5rem;
+        overflow: hidden;
+    }
+    .hero::before {
+        content: "";
+        position: absolute;
+        top: -220px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 720px;
+        height: 720px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(212,175,95,0.14) 0%, transparent 62%);
+        pointer-events: none;
+    }
+    .hero-logo {
+        position: relative;
+        width: 150px;
+        aspect-ratio: 679 / 789;
+        object-fit: contain;
+        margin: 0 auto 1.75rem;
+        border-radius: 18px;
+        background: rgba(212,175,95,0.08);
+        border: 2px solid var(--borde-suave);
+        box-shadow: 0 10px 34px rgba(212,175,95,0.22);
+    }
+    .hero h1 {
+        position: relative;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2.6rem, 8vw, 5.25rem);
+        font-weight: 700;
+        line-height: 1.02;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.5rem;
+    }
+    .hero-tagline {
+        font-size: 0.8125rem;
+        letter-spacing: 0.42em;
+        text-transform: uppercase;
+        color: var(--dorado-suave);
+        margin-bottom: 1.6rem;
+    }
+    .hero-desc {
+        position: relative;
+        max-width: 640px;
+        margin: 0 auto 2.25rem;
+        color: var(--texto-apagado);
+        font-size: 1.0125rem;
+        line-height: 1.75;
+    }
+    .hero-acciones {
+        position: relative;
+        display: flex;
+        gap: 0.9rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .hero-line {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.9rem;
+        max-width: 300px;
+        margin: 2.25rem auto 0;
+    }
+    .hero-line::before,
+    .hero-line::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(212,175,95,0.5), transparent);
+    }
+    .hero-line i { color: var(--dorado); font-size: 0.8rem; }
+
+    /* ===== Bloques destacados ===== */
+    .resalte-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.4rem;
+        margin-top: 2.75rem;
+    }
+    .resalte-card {
+        position: relative;
+        padding: 2rem 1.75rem;
+        background: linear-gradient(180deg, var(--superficie) 0%, var(--carbono) 100%);
+        border: 1px solid var(--borde);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+    .resalte-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--dorado), transparent);
+        opacity: 0;
+        transition: opacity 0.22s ease;
+    }
+    .resalte-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(212,175,95,0.45);
+        box-shadow: 0 18px 42px rgba(0,0,0,0.5);
+    }
+    .resalte-card:hover::before { opacity: 1; }
+    .resalte-card i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: rgba(212,175,95,0.1);
+        border: 1px solid var(--borde-suave);
+        color: var(--dorado);
+        font-size: 1.1rem;
+        margin-bottom: 1.15rem;
+    }
+    .resalte-card h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.45rem;
+        font-weight: 600;
+        margin-bottom: 0.6rem;
+    }
+    .resalte-card p { font-size: 0.875rem; color: var(--texto-apagado); line-height: 1.7; }
+
+    /* ===== Productos destacados ===== */
+    .destacados-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.2rem;
+        margin-top: 2.75rem;
+    }
+    .destacado-card {
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(180deg, var(--superficie) 0%, var(--carbono) 100%);
+        border: 1px solid var(--borde);
+        border-radius: 14px;
+        overflow: hidden;
+        transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+    .destacado-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(212,175,95,0.5);
+        box-shadow: 0 18px 42px rgba(0,0,0,0.5);
+    }
+    .destacado-imagen {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        background: #101013;
+        overflow: hidden;
+    }
+    .destacado-imagen img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.35s ease;
+    }
+    .destacado-card:hover .destacado-imagen img { transform: scale(1.05); }
+    .destacado-imagen .placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gris-icono);
+        font-size: 1.6rem;
+    }
+    .destacado-body {
+        padding: 1rem 1.1rem 1.15rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        flex: 1;
+    }
+    .destacado-cat {
+        font-size: 0.6rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--dorado-suave);
+    }
+    .destacado-body h4 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+    .destacado-precio {
+        margin-top: auto;
+        padding-top: 0.55rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--dorado);
+    }
+    .destacado-ver {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 0.6rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--texto-apagado);
+        transition: color 0.18s, gap 0.18s;
+    }
+    .destacado-card:hover .destacado-ver { color: var(--dorado-claro); gap: 0.7rem; }
+
+    /* ===== Llamada a la accion ===== */
+    .cta-band {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--borde-suave);
+        border-radius: 20px;
+        background:
+            radial-gradient(700px 300px at 15% 0%, rgba(212,175,95,0.12), transparent 60%),
+            linear-gradient(180deg, var(--superficie) 0%, var(--carbono) 100%);
+        padding: 3.25rem 2rem;
+        text-align: center;
+    }
+    .cta-band h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(1.7rem, 3.6vw, 2.5rem);
+        font-weight: 600;
+        line-height: 1.15;
+    }
+    .cta-band p {
+        margin: 1rem auto 2rem;
+        max-width: 520px;
+        color: var(--texto-apagado);
+        font-size: 0.95rem;
+    }
+    .cta-acciones {
+        display: flex;
+        gap: 0.9rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 1000px) {
+        .destacados-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+        .resalte-grid { grid-template-columns: 1fr; gap: 1rem; }
+        .resalte-card { padding: 1.6rem 1.4rem; }
+        .resalte-card i { margin-bottom: 0.9rem; }
+    }
+    @media (max-width: 760px) {
+        .hero { padding: 4rem 1.25rem 3.25rem; }
+        .hero-logo { width: 122px; }
+        .hero-desc { font-size: 0.94rem; }
+    }
+    @media (max-width: 640px) {
+        .destacados-grid { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+        .destacado-body { padding: 0.8rem 0.85rem 1rem; }
+        .destacado-body h4 { font-size: 1.02rem; }
+        .destacado-precio { font-size: 0.95rem; }
+        .destacado-ver { font-size: 0.62rem; }
+        .cta-band { padding: 2.25rem 1.25rem; }
+        .hero-acciones .btn { width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="hero">
+    <img src="{{ url_for('static', filename='img/logo/logo.jpg') }}" alt="Logo {{ nombre }}" class="hero-logo">
+    <h1>{{ nombre }}</h1>
+    <p class="hero-tagline">{{ eslogan }}</p>
+    {% if empresa and empresa.descripcion %}
+    <p class="hero-desc">{{ empresa.descripcion }}</p>
+    {% endif %}
+    <div class="hero-acciones">
+        <a href="{{ url_for('public.catalogo') }}" class="btn btn-dorado"><i class="fas fa-gem"></i> Ver catalogo</a>
+        <a href="{{ url_for('public.empresa') }}" class="btn btn-outline"><i class="fas fa-building"></i> Conocer {{ nombre }}</a>
+    </div>
+    <div class="hero-line"><i class="fas fa-diamond"></i></div>
+</section>
+
+<!-- Cifras -->
+{% if total_productos %}
+<section class="publico-seccion reveal" style="padding-top:0.5rem">
+    <div class="nibra-stats">
+        <div class="nibra-stat">
+            <b>{{ total_productos }}</b>
+            <span>Productos</span>
+        </div>
+        <div class="nibra-stat">
+            <b>{{ total_categorias }}</b>
+            <span>Categorias</span>
+        </div>
+        <div class="nibra-stat">
+            <b>{{ total_marcas }}</b>
+            <span>Marcas</span>
+        </div>
+        <div class="nibra-stat">
+            <b>{{ empresa.anios_experiencia if empresa and empresa.anios_experiencia else '100%' }}</b>
+            <span>{{ 'Anios de experiencia' if empresa and empresa.anios_experiencia else 'Marcas originales' }}</span>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Que Ofrecemos -->
+<section class="publico-seccion">
+    <div class="publico-seccion-centrada reveal">
+        <p class="eyebrow">Lo que ofrecemos</p>
+        <h2 class="seccion-titulo">Distribucion con respaldo de marca</h2>
+        <div class="divider-line"><i class="fas fa-diamond"></i></div>
+        <p class="seccion-subtitulo">
+            Seleccionamos productos de belleza y cuidado personal que nuestros clientes
+            realmente necesitan, con precios pensados para el comercio y entrega en todo el pais.
+        </p>
+    </div>
+    <div class="resalte-grid">
+        <article class="resalte-card reveal">
+            <i class="fas fa-box-open"></i>
+            <h3>Amplio catalogo</h3>
+            <p>{{ total_productos }} productos activos entre {{ total_categorias }} categorias, con detalle de cada referencia y precios actualizados.</p>
+        </article>
+        <article class="resalte-card reveal" style="--delay:80ms">
+            <i class="fas fa-truck-fast"></i>
+            <h3>Cobertura nacional</h3>
+            <p>Llegamos a {% if ciudades %}{{ ciudades|length }} ciudades{% else %}todo el pais{% endif %} con logistica propia y despacho rapido.</p>
+        </article>
+        <article class="resalte-card reveal" style="--delay:160ms">
+            <i class="fab fa-whatsapp"></i>
+            <h3>Atencion directa</h3>
+            <p>Habla con un asesor por WhatsApp para precios por mayor, disponibilidad y recomendaciones de productos para tu negocio.</p>
+        </article>
+    </div>
+</section>
+
+<!-- Categorias -->
+{% if categorias %}
+<section class="publico-seccion" style="padding-top:0">
+    <div class="publico-seccion-centrada reveal">
+        <p class="eyebrow">Categorias</p>
+        <h2 class="seccion-titulo">Explora nuestro catalogo</h2>
+        <div class="divider-line"><i class="fas fa-diamond"></i></div>
+        <p class="seccion-subtitulo">Elige una categoria para ver los productos disponibles.</p>
+    </div>
+    <div class="categoria-grid">
+        {% for cat in categorias %}
+        {% if cat.total %}
+        <a href="{{ url_for('public.catalogo', categoria_id=cat.id) }}" class="categoria-card reveal">
+            <div>
+                <h3>{{ cat.nombre }}</h3>
+                {% if cat.descripcion %}<p>{{ cat.descripcion }}</p>{% endif %}
+            </div>
+            <div class="categoria-card-meta">
+                <span>{{ cat.total }} producto{{ 's' if cat.total != 1 else '' }}</span>
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </a>
+        {% endif %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Productos destacados -->
+{% if destacados %}
+<section class="publico-seccion" style="padding-top:0">
+    <div class="publico-seccion-centrada reveal">
+        <p class="eyebrow">Novedades</p>
+        <h2 class="seccion-titulo">Productos destacados</h2>
+        <div class="divider-line"><i class="fas fa-diamond"></i></div>
+    </div>
+    <div class="destacados-grid">
+        {% for p in destacados %}
+        <a href="{{ url_for('public.catalogo', busqueda=p.nombre) }}" class="destacado-card reveal" style="--delay:{{ loop.index0 * 60 }}ms">
+            <div class="destacado-imagen">
+                {% if p.imagen %}
+                <img src="{{ url_for('public.producto_imagen', img_id=p.imagen) }}" alt="{{ p.nombre }}" loading="lazy">
+                {% else %}
+                <div class="placeholder"><i class="fas fa-image"></i></div>
+                {% endif %}
+            </div>
+            <div class="destacado-body">
+                {% if p.categoria %}<span class="destacado-cat">{{ p.categoria }}</span>{% endif %}
+                <h4>{{ p.nombre }}</h4>
+                <span class="destacado-precio">${{ '{:,.0f}'.format(p.precio) }}</span>
+                <span class="destacado-ver">Ver en catalogo <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    <div style="text-align:center; margin-top:2.5rem">
+        <a href="{{ url_for('public.catalogo') }}" class="btn btn-outline">Ver todos los productos</a>
+    </div>
+</section>
+{% endif %}
+
+<!-- Cobertura -->
+{% if ciudades %}
+<section class="publico-seccion" style="padding-top:0">
+    <div class="publico-seccion-centrada reveal">
+        <p class="eyebrow">Cobertura</p>
+        <h2 class="seccion-titulo">Llegamos a todo el pais</h2>
+        <div class="divider-line"><i class="fas fa-diamond"></i></div>
+        <div class="chips">
+            {% for c in ciudades %}
+            <span class="chip"><i class="fas fa-map-marker-alt"></i> {{ c }}</span>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Llamada a la accion -->
+<section class="publico-seccion" style="padding-top:0">
+    <div class="cta-band reveal">
+        <p class="eyebrow">Contactanos</p>
+        <h2>¿Necesitas precios por mayor?</h2>
+        <p>
+            Escribenos y te enviamos la lista de precios mayorista, disponibilidad de cada
+            referencia y las condiciones de entrega para tu negocio.
+        </p>
+        <div class="cta-acciones">
+            <a href="https://wa.me/{{ wa }}?text=Hola%2C%20quiero%20recibir%20la%20lista%20de%20precios%20por%20mayor" class="btn btn-wa" target="_blank" rel="noopener">
+                <i class="fab fa-whatsapp"></i> Pedir lista de precios
+            </a>
+            <a href="{{ url_for('public.empresa') }}#contacto" class="btn btn-outline">
+                <i class="fas fa-envelope"></i> Enviar mensaje
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

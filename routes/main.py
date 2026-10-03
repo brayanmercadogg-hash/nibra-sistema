@@ -8,8 +8,11 @@ main = Blueprint('main', __name__)
 
 
 @main.route('/')
-@login_required
 def dashboard():
+    # Sin sesion, la raiz es la portada publica de la empresa.
+    if 'user_id' not in session:
+        from routes.public import render_inicio
+        return render_inicio()
     if session.get('rol') == 'VENDEDOR':
         return _dashboard_vendedor()
     return _dashboard_general()
@@ -501,3 +504,121 @@ def usuarios_editar(user_id):
     ).fetchall()
     db.close()
     return render_template('main/usuarios.html', users=users, editing=user)
+
+
+CAMPOS_EMPRESA = [
+    'nombre', 'razon_social', 'nit', 'eslogan', 'descripcion', 'sobre_nosotros',
+    'mision', 'vision', 'valores', 'telefono', 'whatsapp', 'email', 'direccion',
+    'ciudad', 'horarios', 'cobertura', 'instagram', 'facebook',
+]
+
+
+@main.route('/empresa-config', methods=['GET', 'POST'])
+@admin_required
+def empresa_config():
+    """Datos publicos de la empresa (pagina web) y mensajes de contacto."""
+    from database.db import seed_empresa
+
+    if request.method == 'POST':
+        accion = request.form.get('accion', 'guardar')
+        db = get_db()
+
+        if accion == 'eliminar_mensaje':
+            try:
+                msg_id = int(request.form.get('id', 0))
+                db.execute("DELETE FROM contacto_mensajes WHERE id = ?", (msg_id,))
+                db.commit()
+                flash('Mensaje eliminado', 'success')
+            except Exception:
+                flash('Error al eliminar el mensaje', 'danger')
+            finally:
+                db.close()
+            return redirect(url_for('main.empresa_config'))
+
+        if accion == 'leido':
+            try:
+                msg_id = int(request.form.get('id', 0))
+                estado = request.form.get('estado', 'LEIDO')
+                if estado not in ('NUEVO', 'LEIDO', 'ARCHIVADO'):
+                    estado = 'LEIDO'
+                db.execute(
+                    "UPDATE contacto_mensajes SET estado = ? WHERE id = ?", (estado, msg_id)
+                )
+                db.commit()
+                flash('Estado del mensaje actualizado', 'success')
+            except Exception:
+                flash('Error al actualizar el mensaje', 'danger')
+            finally:
+                db.close()
+            return redirect(url_for('main.empresa_config'))
+
+        # Guardar datos de la empresa
+        seed_empresa()
+        errores = []
+        datos = {}
+        for campo in CAMPOS_EMPRESA:
+            datos[campo] = request.form.get(campo, '').strip()
+
+        if not datos['nombre']:
+            errores.append('El nombre de la empresa es obligatorio')
+        if len(datos['nombre']) > 80:
+            errores.append('El nombre es demasiado largo')
+        if datos['email'] and '@' not in datos['email']:
+            errores.append('El correo electronico no es valido')
+        if len(datos['whatsapp']) > 20:
+            errores.append('El numero de WhatsApp es demasiado largo')
+        try:
+            anios = int(request.form.get('anios_experiencia', 0) or 0)
+            if anios < 0 or anios > 200:
+                errores.append('Anios de experiencia no valido')
+        except (TypeError, ValueError):
+            anios = 0
+            errores.append('Anios de experiencia debe ser un numero')
+        if len(datos['whatsapp']) > 20:
+            errores.append('El numero de WhatsApp es demasiado largo')
+
+        if errores:
+            for e in errores:
+                flash(e, 'danger')
+            db.close()
+            return redirect(url_for('main.empresa_config'))
+
+        try:
+            valores = [datos[c] for c in CAMPOS_EMPRESA] + [anios]
+            db.execute(
+                '''UPDATE empresa SET
+                       nombre = ?, razon_social = ?, nit = ?, eslogan = ?, descripcion = ?,
+                       sobre_nosotros = ?, mision = ?, vision = ?, valores = ?, telefono = ?,
+                       whatsapp = ?, email = ?, direccion = ?, ciudad = ?, horarios = ?,
+                       cobertura = ?, instagram = ?, facebook = ?, anios_experiencia = ?,
+                       updated_at = CURRENT_TIMESTAMP
+                   WHERE id = 1''',
+                valores
+            )
+            db.commit()
+            flash('Informacion de la empresa actualizada', 'success')
+        except Exception:
+            flash('Error al guardar la informacion de la empresa', 'danger')
+        finally:
+            db.close()
+        return redirect(url_for('main.empresa_config'))
+
+    db = get_db()
+    try:
+        empresa = db.execute("SELECT * FROM empresa WHERE id = 1").fetchone()
+        mensajes = db.execute(
+            '''SELECT id, nombre, email, telefono, asunto, mensaje, estado, created_at
+               FROM contacto_mensajes ORDER BY created_at DESC LIMIT 100'''
+        ).fetchall()
+        nuevos = db.execute(
+            "SELECT COUNT(*) AS cnt FROM contacto_mensajes WHERE estado = 'NUEVO'"
+        ).fetchone()['cnt']
+    finally:
+        db.close()
+
+    return render_template(
+        'main/empresa_config.html',
+        empresa=empresa,
+        mensajes=mensajes,
+        mensajes_nuevos=nuevos
+    )

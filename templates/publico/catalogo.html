@@ -1,847 +1,702 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NIBRA - Catálogo de Productos</title>
-    <link rel="icon" href="{{ url_for('static', filename='img/logo/logo.jpg') }}" type="image/jpeg">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo/logo.jpg') }}">
-    <meta name="description" content="Catálogo de productos de belleza, maquillaje, cuidado capilar, skincare y accesorios de NIBRA.">
-    <meta property="og:site_name" content="NIBRA">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="NIBRA - Catálogo de Productos">
-    <meta property="og:description" content="Descubre maquillaje, cuidado capilar, skincare y accesorios de belleza en el catálogo NIBRA.">
-    <meta property="og:image" content="{{ url_for('static', filename='img/logo/logo.jpg', _external=True) }}">
-    <meta property="og:image:alt" content="Logo de NIBRA">
-    <meta property="og:locale" content="es_ES">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="NIBRA - Catálogo de Productos">
-    <meta name="twitter:description" content="Maquillaje, cuidado capilar, skincare y accesorios de belleza.">
-    <meta name="twitter:image" content="{{ url_for('static', filename='img/logo/logo.jpg', _external=True) }}">
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "NIBRA",
-      "url": "https://nibra-erp.vercel.app/",
-      "image": "https://nibra-erp.vercel.app/static/img/logo/logo.jpg",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://nibra-erp.vercel.app/catalogo/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+{% extends 'publico/base.html' %}
+{% set nombre = empresa.nombre if empresa and empresa.nombre else 'NIBRA' %}
+{% set eslogan = empresa.eslogan if empresa and empresa.eslogan else 'Belleza & Estilo' %}
+{% set wa = (empresa.whatsapp if empresa and empresa.whatsapp else '573013992470')|replace(' ', '')|replace('+', '') %}
+
+{% block title %}Catalogo de Productos — {{ nombre }}{% endblock %}
+{% block meta %}
+<meta name="description" content="Catalogo de productos de belleza, maquillaje, cuidado capilar, skincare y accesorios de {{ nombre }}.">
+{% endblock %}
+{% block og_title %}Catalogo de Productos — {{ nombre }}{% endblock %}
+{% block og_description %}Descubre maquillaje, cuidado capilar, skincare y accesorios de belleza en el catalogo de {{ nombre }}.{% endblock %}
+{% block head_extra %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": {{ nombre|tojson }},
+  "url": {{ url_for('public.catalogo', _external=True)|tojson }},
+  "image": {{ url_for('static', filename='img/logo/logo.jpg', _external=True)|tojson }},
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {{ url_for('public.catalogo', busqueda='{search_term_string}', _external=True)|tojson }},
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* ===== Encabezado de la pagina ===== */
+    .catalogo-header {
+        text-align: center;
+        padding: 3.25rem 1.5rem 2rem;
+        animation: loadFade 0.7s ease both;
     }
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        :root {
-            --negro: #0a0a0a;
-            --negro-2: #101012;
-            --carbono: #151518;
-            --superficie: #1a1a1e;
-            --superficie-2: #202025;
-            --borde: #2c2c31;
-            --borde-suave: rgba(212, 175, 95, 0.18);
-            --dorado: #d4af5f;
-            --dorado-claro: #f0d78c;
-            --dorado-oscuro: #b8944a;
-            --dorado-suave: #c9a25a;
-            --texto: #ece9e2;
-            --texto-suave: #b9b5ab;
-            --texto-apagado: #8a867c;
-            --gris-icono: #6b675f;
-        }
+    .catalogo-brand-eyebrow {
+        font-size: 0.6875rem;
+        letter-spacing: 0.44em;
+        text-transform: uppercase;
+        color: var(--dorado-suave);
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+    .catalogo-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2rem, 5.5vw, 3.25rem);
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        line-height: 1.1;
+    }
+    .catalogo-brand-line {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.9rem;
+        margin: 1.35rem auto 0;
+        max-width: 300px;
+    }
+    .catalogo-brand-line::before,
+    .catalogo-brand-line::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(212,175,95,0.55), transparent);
+    }
+    .catalogo-brand-line i { color: var(--dorado); font-size: 0.8rem; }
+    .catalogo-logo-tagline {
+        font-size: 0.8125rem;
+        color: var(--texto-apagado);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        margin-top: 1rem;
+    }
 
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background:
-                radial-gradient(1200px 700px at 80% -10%, rgba(212,175,95,0.08), transparent 60%),
-                radial-gradient(900px 600px at 10% 110%, rgba(212,175,95,0.05), transparent 55%),
-                linear-gradient(180deg, var(--negro) 0%, var(--negro-2) 100%);
-            color: var(--texto);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            min-height: 100vh;
-        }
-        ::selection { background: var(--dorado); color: var(--negro); }
-        ::-webkit-scrollbar { width: 11px; }
-        ::-webkit-scrollbar-track { background: var(--negro); }
-        ::-webkit-scrollbar-thumb { background: #3a3a40; border-radius: 6px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--dorado-suave); }
+    /* ===== Filtros ===== */
+    .catalogo-filters {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 0.5rem 1.5rem 0;
+        animation: loadFade 0.7s ease 0.08s both;
+    }
+    .catalogo-search {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        background: rgba(26,26,30,0.72);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 0.55rem;
+        border-radius: 14px;
+        border: 1px solid var(--borde);
+        box-shadow: 0 18px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    .catalogo-search-input,
+    .catalogo-search-select {
+        padding: 0.7rem 1rem;
+        border: 1px solid var(--borde);
+        border-radius: 9px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        outline: none;
+        background: var(--carbono);
+        color: var(--texto);
+        transition: border-color 0.15s, box-shadow 0.15s;
+        -webkit-appearance: none;
+    }
+    .catalogo-search-input {
+        flex: 1;
+        min-width: 170px;
+        max-width: 300px;
+    }
+    .catalogo-search-input::placeholder { color: var(--texto-apagado); }
+    .catalogo-search-input:focus,
+    .catalogo-search-select:focus {
+        border-color: var(--dorado-suave);
+        box-shadow: 0 0 0 3px rgba(212,175,95,0.15);
+    }
+    .catalogo-search-select {
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23d4af5f' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.8rem center;
+        padding-right: 2.1rem;
+    }
+    .catalogo-search-select option {
+        background: var(--negro-2);
+        color: var(--texto);
+    }
+    .catalogo-search-btn {
+        padding: 0.7rem 1.6rem;
+        background: linear-gradient(135deg, var(--dorado-claro) 0%, var(--dorado) 55%, var(--dorado-oscuro) 100%);
+        color: var(--negro);
+        border: none;
+        border-radius: 9px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+        box-shadow: 0 6px 18px rgba(212,175,95,0.28);
+    }
+    .catalogo-search-btn:hover {
+        filter: brightness(1.08);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 26px rgba(212,175,95,0.4);
+    }
 
-        /* ===== Header ===== */
-        .catalogo-header {
-            text-align: center;
-            padding: 5.5rem 1.5rem 3.25rem;
-            position: relative;
-        }
-        .catalogo-brand-eyebrow {
-            font-size: 0.6875rem;
-            letter-spacing: 0.44em;
-            text-transform: uppercase;
-            color: var(--dorado-suave);
-            margin-bottom: 1.25rem;
-            font-weight: 500;
-        }
-        .catalogo-logo-img {
-            display: block;
-            width: 170px;
-            aspect-ratio: 679 / 789;
-            object-fit: contain;
-            margin: 0 auto 1.5rem;
-            border-radius: 18px;
-            background: rgba(212,175,95,0.08);
-            border: 2px solid var(--borde-suave);
-            box-shadow: 0 8px 30px rgba(212,175,95,0.20);
-        }
-        .catalogo-brand-line {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.9rem;
-            margin: 1.6rem auto 0;
-            max-width: 300px;
-        }
-        .catalogo-brand-line::before,
-        .catalogo-brand-line::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(212,175,95,0.55), transparent);
-        }
-        .catalogo-logo-tagline {
-            font-size: 0.875rem;
-            color: var(--texto-apagado);
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            margin-top: 1rem;
-        }
-        .catalogo-brand-line i { color: var(--dorado); font-size: 0.8rem; }
-        .catalogo-brand p {
-            margin-top: 1rem;
-            color: var(--texto-apagado);
-            font-size: 0.9375rem;
-            font-weight: 400;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-        }
+    /* ===== Grid ===== */
+    .catalogo-wrapper {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 2.75rem 1.5rem 2rem;
+    }
+    .catalogo-results {
+        text-align: center;
+        color: var(--texto-apagado);
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 1.9rem;
+        animation: loadFade 0.5s ease both;
+    }
+    .catalogo-results b { color: var(--dorado-suave); font-weight: 600; }
+    .catalogo-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.6rem;
+    }
+    .catalogo-card {
+        background: linear-gradient(180deg, var(--superficie) 0%, var(--carbono) 100%);
+        border: 1px solid var(--borde);
+        border-radius: 14px;
+        overflow: hidden;
+        position: relative;
+        opacity: 0;
+        transform: translateY(22px);
+        transition: opacity 0.6s ease var(--delay, 0ms), transform 0.6s ease var(--delay, 0ms),
+                    border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+    .catalogo-card.visible { opacity: 1; transform: translateY(0); }
+    .catalogo-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--dorado), transparent);
+        opacity: 0;
+        transition: opacity 0.22s ease;
+        z-index: 2;
+    }
+    .catalogo-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(212,175,95,0.55);
+        box-shadow: 0 18px 45px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,175,95,0.12);
+    }
+    .catalogo-card:hover::before { opacity: 1; }
+    .catalogo-card-image {
+        width: 100%;
+        height: 225px;
+        background: linear-gradient(180deg, #232327, #1a1a1e);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-bottom: 1px solid var(--borde-suave);
+        position: relative;
+    }
+    .catalogo-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+    .catalogo-card:hover .catalogo-card-image img { transform: scale(1.05); }
+    .catalogo-card-placeholder { font-size: 2.5rem; color: var(--gris-icono); }
+    .catalogo-card-body { padding: 1.3rem 1.35rem 1.35rem; }
+    .catalogo-card-category {
+        display: inline-block;
+        padding: 0.22rem 0.6rem;
+        background: rgba(212,175,95,0.12);
+        border: 1px solid var(--borde-suave);
+        color: var(--dorado-claro);
+        border-radius: 5px;
+        font-size: 0.66rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 0.65rem;
+    }
+    .catalogo-card-title {
+        margin: 0 0 0.4rem;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.28rem;
+        font-weight: 600;
+        line-height: 1.2;
+        color: var(--texto);
+    }
+    .catalogo-card-desc {
+        margin: 0;
+        color: var(--texto-suave);
+        font-size: 0.8125rem;
+        line-height: 1.55;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .catalogo-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.55rem;
+        font-size: 0.75rem;
+        color: var(--texto-apagado);
+    }
+    .catalogo-card-meta .codigo {
+        font-family: monospace;
+        background: var(--carbono);
+        border: 1px solid var(--borde);
+        border-radius: 5px;
+        padding: 0.05rem 0.4rem;
+        color: var(--texto-suave);
+    }
+    .catalogo-badge-imgs {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.66rem;
+        color: var(--dorado-claro);
+        background: rgba(212,175,95,0.12);
+        border: 1px solid var(--borde-suave);
+        border-radius: 5px;
+        padding: 0.12rem 0.4rem;
+        font-weight: 600;
+    }
+    .catalogo-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.05rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--borde);
+    }
+    .catalogo-card-footer .precio-label {
+        display: block;
+        font-size: 0.62rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--texto-apagado);
+        margin-bottom: 0.15rem;
+    }
+    .catalogo-card-price {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: var(--dorado-claro);
+        text-shadow: 0 2px 12px rgba(212,175,95,0.25);
+    }
+    .catalogo-btn-detalle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.5rem 1rem;
+        background: transparent;
+        color: var(--dorado-claro);
+        border: 1px solid rgba(212,175,95,0.5);
+        border-radius: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
+    }
+    .catalogo-btn-detalle:hover {
+        background: linear-gradient(135deg, var(--dorado-claro), var(--dorado-oscuro));
+        color: var(--negro);
+        border-color: transparent;
+        transform: translateY(-1px);
+    }
 
-        /* ===== Filtros ===== */
-        .catalogo-filters {
-            max-width: 780px;
-            margin: 0 auto;
-            padding: 0.5rem 1.5rem 0;
-        }
-        .catalogo-search {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            justify-content: center;
-            background: rgba(26,26,30,0.72);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 0.55rem;
-            border-radius: 14px;
-            border: 1px solid var(--borde);
-            box-shadow: 0 18px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03);
-        }
+    .catalogo-empty {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 5rem 1.5rem;
+        color: var(--texto-apagado);
+        animation: loadFade 0.5s ease both;
+    }
+    .catalogo-empty-icon { font-size: 3.2rem; margin-bottom: 1rem; color: var(--gris-icono); }
+    .catalogo-empty p { font-size: 1rem; }
+    .catalogo-empty a { display: inline-block; margin-top: 1.5rem; }
+
+    /* ===== Modal ===== */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(5,5,5,0.72);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; animation: modalFade 0.25s ease; }
+    .modal {
+        background: linear-gradient(180deg, var(--negro-2) 0%, var(--carbono) 100%);
+        border: 1px solid rgba(212,175,95,0.35);
+        border-radius: 16px;
+        max-width: 880px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,175,95,0.08);
+        position: relative;
+        animation: modalPop 0.28s ease;
+    }
+    @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes modalPop { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .modal::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--dorado), transparent);
+        pointer-events: none;
+    }
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; }
+    .modal-galeria { padding: 1.5rem; }
+    .modal-imagen-principal {
+        width: 100%;
+        aspect-ratio: 4/3;
+        background: linear-gradient(180deg, #232327, #18181c);
+        border: 1px solid var(--borde);
+        border-radius: 10px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-imagen-principal img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
+    .modal-thumbs { display: flex; gap: 0.55rem; margin-top: 0.8rem; flex-wrap: wrap; }
+    .modal-thumb {
+        width: 64px; height: 64px;
+        object-fit: cover;
+        border-radius: 7px;
+        border: 2px solid var(--borde);
+        cursor: pointer;
+        opacity: 0.72;
+        transition: opacity 0.15s, border-color 0.15s;
+        background: #232327;
+    }
+    .modal-thumb.active, .modal-thumb:hover { opacity: 1; border-color: var(--dorado); }
+    .modal-info { padding: 1.7rem 1.7rem 1.7rem 0.4rem; }
+    .modal-cerrar {
+        position: sticky; top: 0; float: right;
+        background: none; border: none; font-size: 1.5rem;
+        cursor: pointer; color: var(--texto-apagado); padding: 0.85rem 1.1rem;
+        transition: color 0.15s;
+        z-index: 3;
+    }
+    .modal-cerrar:hover { color: var(--dorado); }
+    .modal-info .cat {
+        display: inline-block; padding: 0.22rem 0.6rem;
+        background: rgba(212,175,95,0.12); color: var(--dorado-claro);
+        border: 1px solid var(--borde-suave); border-radius: 5px;
+        font-size: 0.66rem; font-weight: 600; letter-spacing: 0.05em;
+        text-transform: uppercase; margin-bottom: 0.7rem;
+    }
+    .modal-info h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.75rem; font-weight: 600;
+        line-height: 1.15; color: var(--texto); margin-bottom: 0.5rem;
+    }
+    .modal-precio {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.9rem; font-weight: 700; color: var(--dorado-claro);
+        margin: 0.8rem 0;
+        text-shadow: 0 2px 14px rgba(212,175,95,0.25);
+    }
+    .modal-detalles {
+        list-style: none; margin: 1rem 0 1.2rem; padding: 0;
+        border-top: 1px solid var(--borde);
+    }
+    .modal-detalles li {
+        display: flex; justify-content: space-between; gap: 1rem;
+        padding: 0.55rem 0; border-bottom: 1px solid var(--borde);
+        font-size: 0.85rem;
+    }
+    .modal-detalles li span:first-child { color: var(--texto-apagado); font-weight: 500; }
+    .modal-detalles li span:last-child { color: var(--texto); font-weight: 600; text-align: right; }
+    .modal-descripcion-titulo {
+        font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.16em;
+        color: var(--dorado-suave); font-weight: 600;
+    }
+    .modal-descripcion {
+        font-size: 0.875rem; color: var(--texto-suave); line-height: 1.7;
+        white-space: pre-line; margin-top: 0.5rem;
+    }
+
+    /* ===== Responsive ===== */
+    @media (prefers-reduced-motion: reduce) {
+        .catalogo-card { opacity: 1; transform: none; }
+        .catalogo-card:hover { transform: none; }
+        .catalogo-card:hover .catalogo-card-image img { transform: none; }
+        .catalogo-header, .catalogo-filters, .catalogo-results, .catalogo-empty { animation: none; }
+        .modal-overlay.open { animation: none; }
+        .modal { animation: none; }
+    }
+    @media (max-width: 900px) {
+        .catalogo-grid { grid-template-columns: repeat(2, 1fr); }
+        .modal-grid { grid-template-columns: 1fr; }
+        .modal-info { padding: 0 1.5rem 1.7rem; }
+        .modal-galeria { padding: 1.5rem; }
+    }
+    @media (max-width: 560px) {
+        .catalogo-grid { grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
+        .catalogo-search { flex-direction: column; align-items: stretch; }
         .catalogo-search-input,
-        .catalogo-search-select {
-            padding: 0.7rem 1rem;
-            border: 1px solid var(--borde);
-            border-radius: 9px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
-            outline: none;
-            background: var(--carbono);
-            color: var(--texto);
-            transition: border-color 0.15s, box-shadow 0.15s;
-            -webkit-appearance: none;
-        }
-        .catalogo-search-input {
-            flex: 1;
-            min-width: 170px;
-            max-width: 300px;
-        }
-        .catalogo-search-input::placeholder { color: var(--texto-apagado); }
-        .catalogo-search-input:focus,
-        .catalogo-search-select:focus {
-            border-color: var(--dorado-suave);
-            box-shadow: 0 0 0 3px rgba(212,175,95,0.15);
-        }
-        .catalogo-search-select {
-            cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23d4af5f' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.8rem center;
-            padding-right: 2.1rem;
-        }
-        .catalogo-search-select option {
-            background: var(--negro-2);
-            color: var(--texto);
-        }
-        .catalogo-search-btn {
-            padding: 0.7rem 1.6rem;
-            background: linear-gradient(135deg, var(--dorado-claro) 0%, var(--dorado) 55%, var(--dorado-oscuro) 100%);
-            color: var(--negro);
-            border: none;
-            border-radius: 9px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
-            box-shadow: 0 6px 18px rgba(212,175,95,0.28);
-        }
-        .catalogo-search-btn:hover {
-            filter: brightness(1.08);
-            transform: translateY(-1px);
-            box-shadow: 0 10px 26px rgba(212,175,95,0.4);
-        }
-
-        /* ===== Grid ===== */
-        .catalogo-wrapper {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 2.75rem 1.5rem 2rem;
-        }
-        .catalogo-results {
-            text-align: center;
-            color: var(--texto-apagado);
-            font-size: 0.8rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            margin-bottom: 1.9rem;
-        }
-        .catalogo-results b { color: var(--dorado-suave); font-weight: 600; }
-        .catalogo-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.6rem;
-        }
-        .catalogo-card {
-            background: linear-gradient(180deg, var(--superficie) 0%, var(--carbono) 100%);
-            border: 1px solid var(--borde);
-            border-radius: 14px;
-            overflow: hidden;
-            position: relative;
-            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
-        }
-        .catalogo-card::before {
-            content: "";
-            position: absolute;
-            inset: 0 0 auto 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--dorado), transparent);
-            opacity: 0;
-            transition: opacity 0.22s ease;
-            z-index: 2;
-        }
-        .catalogo-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(212,175,95,0.55);
-            box-shadow: 0 18px 45px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,175,95,0.12);
-        }
-        .catalogo-card:hover::before { opacity: 1; }
-
-        /* Animacion de entrada sutil al cargar (header, filtros, contador) */
-        @keyframes loadFade {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .catalogo-header { animation: loadFade 0.7s ease both; }
-        .catalogo-filters { animation: loadFade 0.7s ease 0.08s both; }
-        .catalogo-results, .catalogo-empty { animation: loadFade 0.5s ease both; }
-
-        /* Animacion de aparicion al hacer scroll */
-        .catalogo-card {
-            opacity: 0;
-            transform: translateY(22px);
-            transition: opacity 0.6s ease var(--delay, 0ms), transform 0.6s ease var(--delay, 0ms),
-                        border-color 0.22s ease, box-shadow 0.22s ease;
-        }
-        .catalogo-card.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .catalogo-card { opacity: 1; transform: none; }
-            .catalogo-card:hover { transform: none; }
-            .catalogo-card:hover .catalogo-card-image img { transform: none; }
-            .catalogo-header, .catalogo-filters, .catalogo-results, .catalogo-empty { animation: none; }
-            .modal-overlay.open { animation: none; }
-            .modal { animation: none; }
-        }
-        @media (max-width: 560px) {
-            .catalogo-card { transform: translateY(14px); }
-            .catalogo-card.visible { transform: translateY(0); }
-        }
-        .catalogo-card-image {
-            width: 100%;
-            height: 225px;
-            background: linear-gradient(180deg, #232327, #1a1a1e);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border-bottom: 1px solid var(--borde-suave);
-            position: relative;
-        }
-        .catalogo-card-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.4s ease;
-        }
-        .catalogo-card:hover .catalogo-card-image img { transform: scale(1.05); }
-        .catalogo-card-placeholder {
-            font-size: 2.5rem;
-            color: var(--gris-icono);
-        }
-        .catalogo-card-body {
-            padding: 1.3rem 1.35rem 1.35rem;
-        }
-        .catalogo-card-category {
-            display: inline-block;
-            padding: 0.22rem 0.6rem;
-            background: rgba(212,175,95,0.12);
-            border: 1px solid var(--borde-suave);
-            color: var(--dorado-claro);
-            border-radius: 5px;
-            font-size: 0.66rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            margin-bottom: 0.65rem;
-        }
-        .catalogo-card-title {
-            margin: 0 0 0.4rem;
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.28rem;
-            font-weight: 600;
-            line-height: 1.2;
-            color: var(--texto);
-        }
-        .catalogo-card-desc {
-            margin: 0;
-            color: var(--texto-suave);
-            font-size: 0.8125rem;
-            line-height: 1.55;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .catalogo-card-meta {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.55rem;
-            font-size: 0.75rem;
-            color: var(--texto-apagado);
-        }
-        .catalogo-card-meta .codigo {
-            font-family: monospace;
-            background: var(--carbono);
-            border: 1px solid var(--borde);
-            border-radius: 5px;
-            padding: 0.05rem 0.4rem;
-            color: var(--texto-suave);
-        }
-        .catalogo-badge-imgs {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.66rem;
-            color: var(--dorado-claro);
-            background: rgba(212,175,95,0.12);
-            border: 1px solid var(--borde-suave);
-            border-radius: 5px;
-            padding: 0.12rem 0.4rem;
-            font-weight: 600;
-        }
+        .catalogo-search-select { max-width: 100%; min-width: 100%; }
+        .catalogo-header { padding: 2.5rem 1.25rem 1.5rem; }
+        .catalogo-logo-tagline { font-size: 0.7rem; }
+        .catalogo-wrapper { padding: 2rem 0.7rem 1.5rem; }
+        .catalogo-results { margin-bottom: 1.4rem; font-size: 0.72rem; }
+        .catalogo-card { border-radius: 12px; }
+        .catalogo-card-image { height: 175px; }
+        .catalogo-card-body { padding: 0.9rem 0.9rem 1rem; }
+        .catalogo-card-category { font-size: 0.6rem; padding: 0.18rem 0.45rem; margin-bottom: 0.5rem; }
+        .catalogo-card-title { font-size: 1.06rem; line-height: 1.15; margin-bottom: 0.35rem; }
+        .catalogo-card-desc { font-size: 0.75rem; -webkit-line-clamp: 2; }
+        .catalogo-card-meta { font-size: 0.62rem; }
+        .catalogo-card-meta .codigo { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .catalogo-badge-imgs { display: none; }
         .catalogo-card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 1.05rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--borde);
-        }
-        .catalogo-card-footer .precio-label {
-            display: block;
-            font-size: 0.62rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--texto-apagado);
-            margin-bottom: 0.15rem;
-        }
-        .catalogo-card-price {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.45rem;
-            font-weight: 700;
-            color: var(--dorado-claro);
-            text-shadow: 0 2px 12px rgba(212,175,95,0.25);
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.6rem;
+            margin-top: 0.8rem;
+            padding-top: 0.75rem;
         }
         .catalogo-btn-detalle {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            padding: 0.5rem 1rem;
-            background: transparent;
-            color: var(--dorado-claro);
-            border: 1px solid rgba(212,175,95,0.5);
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.78rem;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            cursor: pointer;
-            transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
-        }
-        .catalogo-btn-detalle:hover {
-            background: linear-gradient(135deg, var(--dorado-claro), var(--dorado-oscuro));
-            color: var(--negro);
-            border-color: transparent;
-            transform: translateY(-1px);
-        }
-
-        .catalogo-empty {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 5rem 1.5rem;
-            color: var(--texto-apagado);
-        }
-        .catalogo-empty-icon {
-            font-size: 3.2rem;
-            margin-bottom: 1rem;
-            color: var(--gris-icono);
-        }
-        .catalogo-empty p { font-size: 1rem; }
-
-        /* ===== Modal ===== */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(5,5,5,0.72);
-            backdrop-filter: blur(4px);
-            display: none;
-            align-items: center;
             justify-content: center;
-            z-index: 1000;
-            padding: 1rem;
-        }
-        .modal-overlay.open { display: flex; animation: modalFade 0.25s ease; }
-        .modal {
-            background: linear-gradient(180deg, var(--negro-2) 0%, var(--carbono) 100%);
-            border: 1px solid rgba(212,175,95,0.35);
-            border-radius: 16px;
-            max-width: 880px;
             width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,175,95,0.08);
-            position: relative;
-            animation: modalPop 0.28s ease;
+            padding: 0.5rem 0.6rem;
+            font-size: 0.72rem;
         }
-        @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes modalPop { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .modal::before {
-            content: "";
-            position: absolute;
-            inset: 0 0 auto 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--dorado), transparent);
-            pointer-events: none;
-        }
-        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; }
-        .modal-galeria { padding: 1.5rem 1.5rem 1.5rem 1.5rem; }
-        .modal-imagen-principal {
-            width: 100%;
-            aspect-ratio: 4/3;
-            background: linear-gradient(180deg, #232327, #18181c);
-            border: 1px solid var(--borde);
-            border-radius: 10px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-imagen-principal img {
-            width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;
-        }
-        .modal-thumbs {
-            display: flex; gap: 0.55rem; margin-top: 0.8rem; flex-wrap: wrap;
-        }
-        .modal-thumb {
-            width: 64px; height: 64px;
-            object-fit: cover;
-            border-radius: 7px;
-            border: 2px solid var(--borde);
-            cursor: pointer;
-            opacity: 0.72;
-            transition: opacity 0.15s, border-color 0.15s;
-            background: #232327;
-        }
-        .modal-thumb.active, .modal-thumb:hover { opacity: 1; border-color: var(--dorado); }
-        .modal-info { padding: 1.7rem 1.7rem 1.7rem 0.4rem; }
-        .modal-cerrar {
-            position: sticky; top: 0; float: right;
-            background: none; border: none; font-size: 1.5rem;
-            cursor: pointer; color: var(--texto-apagado); padding: 0.85rem 1.1rem;
-            transition: color 0.15s;
-            z-index: 3;
-        }
-        .modal-cerrar:hover { color: var(--dorado); }
-        .modal-info .cat {
-            display: inline-block; padding: 0.22rem 0.6rem;
-            background: rgba(212,175,95,0.12); color: var(--dorado-claro);
-            border: 1px solid var(--borde-suave); border-radius: 5px;
-            font-size: 0.66rem; font-weight: 600; letter-spacing: 0.05em;
-            text-transform: uppercase; margin-bottom: 0.7rem;
-        }
-        .modal-info h2 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.75rem; font-weight: 600;
-            line-height: 1.15; color: var(--texto); margin-bottom: 0.5rem;
-        }
-        .modal-precio {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.9rem; font-weight: 700; color: var(--dorado-claro);
-            margin: 0.8rem 0;
-            text-shadow: 0 2px 14px rgba(212,175,95,0.25);
-        }
-        .modal-detalles {
-            list-style: none; margin: 1rem 0 1.2rem; padding: 0;
-            border-top: 1px solid var(--borde);
-        }
-        .modal-detalles li {
-            display: flex; justify-content: space-between; gap: 1rem;
-            padding: 0.55rem 0; border-bottom: 1px solid var(--borde);
-            font-size: 0.85rem;
-        }
-        .modal-detalles li span:first-child { color: var(--texto-apagado); font-weight: 500; }
-        .modal-detalles li span:last-child { color: var(--texto); font-weight: 600; text-align: right; }
-        .modal-descripcion-titulo {
-            font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.16em;
-            color: var(--dorado-suave); font-weight: 600;
-        }
-        .modal-descripcion {
-            font-size: 0.875rem; color: var(--texto-suave); line-height: 1.7;
-            white-space: pre-line; margin-top: 0.5rem;
-        }
+        .catalogo-card-price { font-size: 1.2rem; }
+    }
+    @media (max-width: 380px) {
+        .catalogo-card-image { height: 150px; }
+        .catalogo-card-title { font-size: 0.98rem; }
+    }
+</style>
+{% endblock %}
 
-        /* ===== Footer ===== */
-        .catalogo-footer {
-            text-align: center;
-            padding: 2.5rem 1.5rem 4.5rem;
-            color: var(--texto-apagado);
-            font-size: 0.78rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
-        .catalogo-footer .divider {
-            display: flex; align-items: center; justify-content: center; gap: 0.8rem;
-            max-width: 280px; margin: 0 auto 1.2rem;
-        }
-        .catalogo-footer .divider::before,
-        .catalogo-footer .divider::after {
-            content: ""; flex: 1; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(212,175,95,0.4), transparent);
-        }
-        .catalogo-footer .divider i { color: var(--dorado-suave); font-size: 0.7rem; }
-        .catalogo-footer b { color: var(--dorado-claro); font-weight: 600; }
+{% block content %}
 
-        /* ===== WhatsApp ===== */
-        .whatsapp-float {
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            z-index: 999;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            background: #25d366;
-            color: #fff;
-            text-decoration: none;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            padding: 0.85rem 1.25rem;
-            border-radius: 50px;
-            box-shadow: 0 8px 22px rgba(0,0,0,0.4);
-            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-        }
-        .whatsapp-float:hover {
-            background: #20bd5a;
-            transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
-            color: #fff;
-        }
-        .whatsapp-float i { font-size: 1.5rem; }
+<header class="catalogo-header">
+    <div class="catalogo-brand-eyebrow">{{ eslogan }}</div>
+    <h1>Catalogo de productos</h1>
+    <p class="catalogo-logo-tagline">{{ eslogan }}</p>
+    <div class="catalogo-brand-line"><i class="fas fa-diamond"></i></div>
+</header>
 
-        @media (max-width: 900px) {
-            .catalogo-grid { grid-template-columns: repeat(2, 1fr); }
-            .modal-grid { grid-template-columns: 1fr; }
-            .modal-info { padding: 0 1.5rem 1.7rem; }
-            .modal-galeria { padding: 1.5rem; }
-        }
-        @media (max-width: 560px) {
-            .catalogo-grid { grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
-            .catalogo-search { flex-direction: column; align-items: stretch; }
-            .catalogo-search-input,
-            .catalogo-search-select { max-width: 100%; }
-            .catalogo-header { padding: 4rem 1.25rem 2.5rem; }
-            .catalogo-logo-img { width: 120px; }
-            .catalogo-brand p { font-size: 0.8rem; }
-            .catalogo-search { gap: 0.5rem; }
-            .whatsapp-float { bottom: 1rem; right: 1rem; }
-            .catalogo-wrapper { padding: 2rem 0.7rem 1.5rem; }
-            .catalogo-results { margin-bottom: 1.4rem; font-size: 0.72rem; }
+<div class="catalogo-filters">
+    <form method="GET" action="{{ url_for('public.catalogo') }}" class="catalogo-search">
+        <input type="text" name="busqueda" class="catalogo-search-input" placeholder="Buscar por nombre o codigo..."
+               value="{{ busqueda }}">
+        <select name="categoria_id" class="catalogo-search-select">
+            <option value="">Todas las categorias</option>
+            {% for cat in categorias %}
+            <option value="{{ cat.id }}" {% if categoria_seleccionada|string == cat.id|string %}selected{% endif %}>
+                {{ cat.nombre }}
+            </option>
+            {% endfor %}
+        </select>
+        <select name="marca" class="catalogo-search-select">
+            <option value="">Todas las marcas</option>
+            {% for m in marcas %}
+            <option value="{{ m.marca }}" {% if marca_seleccionada == m.marca %}selected{% endif %}>
+                {{ m.marca }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="catalogo-search-btn"><i class="fas fa-search"></i> Buscar</button>
+    </form>
+</div>
 
-            .catalogo-card { border-radius: 12px; }
-            .catalogo-card-image { height: 175px; }
-            .catalogo-card-body { padding: 0.9rem 0.9rem 1rem; }
-            .catalogo-card-category { font-size: 0.6rem; padding: 0.18rem 0.45rem; margin-bottom: 0.5rem; }
-            .catalogo-card-title { font-size: 1.06rem; line-height: 1.15; margin-bottom: 0.35rem; }
-            .catalogo-card-desc { font-size: 0.75rem; -webkit-line-clamp: 2; }
-            .catalogo-card-meta { font-size: 0.62rem; }
-            .catalogo-card-meta .codigo { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-            .catalogo-badge-imgs { display: none; }
-
-            .catalogo-card-footer {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.6rem;
-                margin-top: 0.8rem;
-                padding-top: 0.75rem;
-            }
-            .catalogo-btn-detalle {
-                justify-content: center;
-                width: 100%;
-                padding: 0.5rem 0.6rem;
-                font-size: 0.72rem;
-            }
-            .catalogo-card-price { font-size: 1.2rem; }
-        }
-        @media (max-width: 380px) {
-            .catalogo-card-image { height: 150px; }
-            .catalogo-card-title { font-size: 0.98rem; }
-        }
-        @media(max-width:560px){.catalogo-search{flex-direction:column !important;gap:8px !important}.catalogo-search-input{min-width:100% !important;max-width:100% !important}.catalogo-filters{flex-direction:column !important;gap:8px !important}.catalogo-search-select{width:100% !important}}
-    </style>
-</head>
-<body>
-    <header class="catalogo-header">
-        <div class="catalogo-brand">
-            <img src="{{ url_for('static', filename='img/logo/logo.jpg') }}" alt="Logo NIBRA" class="catalogo-logo-img">
-            <div class="catalogo-brand-eyebrow">Belleza &amp; Estilo</div>
-            <p class="catalogo-logo-tagline">Colección de productos</p>
-        </div>
-    </header>
-
-    <div class="catalogo-filters">
-        <form method="GET" action="{{ url_for('public.catalogo') }}" class="catalogo-search">
-            <input type="text" name="busqueda" class="catalogo-search-input" placeholder="Buscar productos..."
-                   value="{{ busqueda }}">
-            <select name="categoria_id" class="catalogo-search-select">
-                <option value="">Todas las categorías</option>
-                {% for cat in categorias %}
-                <option value="{{ cat.id }}" {% if categoria_seleccionada|string == cat.id|string %}selected{% endif %}>
-                    {{ cat.nombre }}
-                </option>
-                {% endfor %}
-            </select>
-            <select name="marca" class="catalogo-search-select">
-                <option value="">Todas las marcas</option>
-                {% for m in marcas %}
-                <option value="{{ m.marca }}" {% if marca_seleccionada == m.marca %}selected{% endif %}>
-                    {{ m.marca }}
-                </option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="catalogo-search-btn"><i class="fas fa-search"></i> Buscar</button>
-        </form>
+<div class="catalogo-wrapper">
+    {% if productos %}
+    <div class="catalogo-results">
+        <b>{{ productos|length }}</b> producto{{ 's' if productos|length != 1 else '' }}
+        {% if busqueda or categoria_seleccionada or marca_seleccionada %} encontrado{{ 's' if productos|length != 1 else '' }}{% endif %}
     </div>
-
-    <div class="catalogo-wrapper">
-        {% if productos %}
-        <div class="catalogo-results">
-            <b>{{ productos|length }}</b> producto{{ 's' if productos|length != 1 else '' }}
-            {% if busqueda or categoria_seleccionada or marca_seleccionada %} encontrado{{ 's' if productos|length != 1 else '' }}{% endif %}
-        </div>
-        {% endif %}
-        <div class="catalogo-grid">
-            {% for p in productos %}
-            {% set imgs = imagenes_por_producto.get(p.id, []) %}
-            <div class="catalogo-card">
-                <div class="catalogo-card-image">
-                    {% if imgs %}
-                    <img src="{{ url_for('public.producto_imagen', img_id=imgs[0]) }}" alt="{{ p.nombre }}" loading="lazy">
-                    {% else %}
-                    <div class="catalogo-card-placeholder">
-                        <i class="fas fa-image"></i>
-                    </div>
+    {% endif %}
+    <div class="catalogo-grid">
+        {% for p in productos %}
+        {% set imgs = imagenes_por_producto.get(p.id, []) %}
+        <div class="catalogo-card">
+            <div class="catalogo-card-image">
+                {% if imgs %}
+                <img src="{{ url_for('public.producto_imagen', img_id=imgs[0]) }}" alt="{{ p.nombre }}" loading="lazy">
+                {% else %}
+                <div class="catalogo-card-placeholder">
+                    <i class="fas fa-image"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="catalogo-card-body">
+                <span class="catalogo-card-category">{{ p.categoria_nombre or 'Sin categoria' }}</span>
+                <h3 class="catalogo-card-title">{{ p.nombre }}</h3>
+                <div class="catalogo-card-meta">
+                    <span class="codigo">{{ p.codigo }}</span>
+                    {% if p.marca %}<span>{{ p.marca }}</span>{% endif %}
+                    {% if imgs|length > 1 %}
+                    <span class="catalogo-badge-imgs"><i class="fas fa-images"></i> {{ imgs|length }}</span>
                     {% endif %}
                 </div>
-                <div class="catalogo-card-body">
-                    <span class="catalogo-card-category">{{ p.categoria_nombre or 'Sin categoría' }}</span>
-                    <h3 class="catalogo-card-title">{{ p.nombre }}</h3>
-                    <div class="catalogo-card-meta">
-                        <span class="codigo">{{ p.codigo }}</span>
-                        {% if p.marca %}<span>{{ p.marca }}</span>{% endif %}
-                        {% if imgs|length > 1 %}
-                        <span class="catalogo-badge-imgs"><i class="fas fa-images"></i> {{ imgs|length }}</span>
-                        {% endif %}
-                    </div>
-                    <p class="catalogo-card-desc" style="margin-top:0.5rem">{{ p.descripcion or '' }}</p>
-                    <div class="catalogo-card-footer">
-                        <span>
-                            <span class="precio-label">Precio</span>
-                            <span class="catalogo-card-price">${{ '{:,.2f}'.format(p.precio_venta|float) }}</span>
-                        </span>
-                        <button type="button" class="catalogo-btn-detalle" onclick="abrirDetalle({{ loop.index0 }})">
-                            <i class="fas fa-eye"></i> Ver detalles
-                        </button>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="catalogo-empty">
-                <div class="catalogo-empty-icon"><i class="fas fa-box-open"></i></div>
-                <p>No se encontraron productos</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <footer class="catalogo-footer">
-        <div class="divider"><i class="fas fa-diamond"></i></div>
-        <span>NIBRA &mdash; <b>Belleza &amp; Estilo</b></span>
-    </footer>
-
-    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)cerrarModal()">
-        <div class="modal" role="dialog" aria-modal="true">
-            <button type="button" class="modal-cerrar" onclick="cerrarModal()" aria-label="Cerrar">&times;</button>
-            <div class="modal-grid">
-                <div class="modal-galeria">
-                    <div class="modal-imagen-principal" id="mImagenWrap">
-                        <img id="mImagen" src="" alt="" style="display:none">
-                        <i class="fas fa-image" id="mPlaceholder" style="font-size:3rem;color:#6b675f"></i>
-                    </div>
-                    <div class="modal-thumbs" id="mThumbs"></div>
-                </div>
-                <div class="modal-info">
-                    <span class="cat" id="mCategoria"></span>
-                    <h2 id="mNombre"></h2>
-                    <div class="catalogo-card-meta">
-                        <span class="codigo" id="mCodigo"></span>
-                        <span id="mMarca"></span>
-                    </div>
-                    <div class="modal-precio" id="mPrecio"></div>
-                    <ul class="modal-detalles">
-                        <li><span>Código</span><span id="mCodigo2"></span></li>
-                        <li><span>Categoría</span><span id="mCategoria2"></span></li>
-                        <li><span>Marca</span><span id="mMarca2"></span></li>
-                        <li><span>Fotos</span><span id="mFotos"></span></li>
-                    </ul>
-                    <strong class="modal-descripcion-titulo">Descripción</strong>
-                    <p class="modal-descripcion" id="mDescripcion"></p>
+                <p class="catalogo-card-desc" style="margin-top:0.5rem">{{ p.descripcion or '' }}</p>
+                <div class="catalogo-card-footer">
+                    <span>
+                        <span class="precio-label">Precio</span>
+                        <span class="catalogo-card-price">${{ '{:,.2f}'.format(p.precio_venta|float) }}</span>
+                    </span>
+                    <button type="button" class="catalogo-btn-detalle" onclick="abrirDetalle({{ loop.index0 }})">
+                        <i class="fas fa-eye"></i> Ver detalles
+                    </button>
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="catalogo-empty">
+            <div class="catalogo-empty-icon"><i class="fas fa-box-open"></i></div>
+            <p>No se encontraron productos</p>
+            <a href="{{ url_for('public.catalogo') }}" class="btn btn-outline">Ver todos los productos</a>
+        </div>
+        {% endfor %}
     </div>
+</div>
 
-    <script type="application/json" id="productosData">{{ datos_json|safe }}</script>
-    <script>
-        var PRODUCTOS = JSON.parse(document.getElementById('productosData').textContent);
-        var productoActual = null;
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)cerrarModal()">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Detalle del producto">
+        <button type="button" class="modal-cerrar" onclick="cerrarModal()" aria-label="Cerrar">&times;</button>
+        <div class="modal-grid">
+            <div class="modal-galeria">
+                <div class="modal-imagen-principal" id="mImagenWrap">
+                    <img id="mImagen" src="" alt="" style="display:none">
+                    <i class="fas fa-image" id="mPlaceholder" style="font-size:3rem;color:#6b675f"></i>
+                </div>
+                <div class="modal-thumbs" id="mThumbs"></div>
+            </div>
+            <div class="modal-info">
+                <span class="cat" id="mCategoria"></span>
+                <h2 id="mNombre"></h2>
+                <div class="catalogo-card-meta">
+                    <span class="codigo" id="mCodigo"></span>
+                    <span id="mMarca"></span>
+                </div>
+                <div class="modal-precio" id="mPrecio"></div>
+                <ul class="modal-detalles">
+                    <li><span>Codigo</span><span id="mCodigo2"></span></li>
+                    <li><span>Categoria</span><span id="mCategoria2"></span></li>
+                    <li><span>Marca</span><span id="mMarca2"></span></li>
+                    <li><span>Fotos</span><span id="mFotos"></span></li>
+                </ul>
+                <strong class="modal-descripcion-titulo">Descripcion</strong>
+                <p class="modal-descripcion" id="mDescripcion"></p>
+                <a href="https://wa.me/{{ wa }}?text=Hola%2C%20quiero%20informaci%C3%B3n%20del%20producto" class="btn btn-wa" style="width:100%; margin-top:1.5rem" target="_blank" rel="noopener">
+                    <i class="fab fa-whatsapp"></i> Consultar por este producto
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
-        function abrirDetalle(idx) {
-            var p = PRODUCTOS[idx];
-            if (!p) return;
-            productoActual = p;
-            document.getElementById('mNombre').textContent = p.nombre;
-            document.getElementById('mCodigo').textContent = p.codigo;
-            document.getElementById('mCodigo2').textContent = p.codigo;
-            document.getElementById('mCategoria').textContent = p.categoria;
-            document.getElementById('mCategoria2').textContent = p.categoria;
-            document.getElementById('mMarca').textContent = p.marca || '';
-            document.getElementById('mMarca2').textContent = p.marca || 'N/A';
-            document.getElementById('mPrecio').textContent = '$' + p.precio.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('mFotos').textContent = (p.imagenes.length || 0);
-            document.getElementById('mDescripcion').textContent = p.descripcion || 'Sin descripción.';
+{% endblock %}
 
-            var thumbs = document.getElementById('mThumbs');
-            thumbs.innerHTML = '';
-            if (p.imagenes.length === 0) {
-                document.getElementById('mImagen').style.display = 'none';
-                document.getElementById('mPlaceholder').style.display = '';
-            } else {
-                document.getElementById('mPlaceholder').style.display = 'none';
-                setImagenPrincipal(p.imagenes[0], 0);
-                p.imagenes.forEach(function(imgId, i) {
-                    var t = document.createElement('img');
-                    t.src = '/catalogo/imagen/' + imgId;
-                    t.className = 'modal-thumb';
-                    t.alt = 'Foto ' + (i + 1);
-                    t.dataset.idx = i;
-                    t.onclick = function() { setImagenPrincipal(imgId, i); };
-                    thumbs.appendChild(t);
-                });
-            }
-            document.getElementById('modalOverlay').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
+{% block scripts %}
+<script type="application/json" id="productosData">{{ datos_json|safe }}</script>
+<script>
+    var PRODUCTOS = JSON.parse(document.getElementById('productosData').textContent);
+    var productoActual = null;
 
-        function setImagenPrincipal(imgId, idx) {
-            var img = document.getElementById('mImagen');
-            img.style.display = '';
-            img.src = '/catalogo/imagen/' + imgId;
-            img.onclick = function() { window.open(this.src, '_blank'); };
-            var ts = document.querySelectorAll('.modal-thumb');
-            ts.forEach(function(t) { t.classList.toggle('active', parseInt(t.dataset.idx) === idx); });
-        }
+    function abrirDetalle(idx) {
+        var p = PRODUCTOS[idx];
+        if (!p) return;
+        productoActual = p;
+        document.getElementById('mNombre').textContent = p.nombre;
+        document.getElementById('mCodigo').textContent = p.codigo;
+        document.getElementById('mCodigo2').textContent = p.codigo;
+        document.getElementById('mCategoria').textContent = p.categoria;
+        document.getElementById('mCategoria2').textContent = p.categoria;
+        document.getElementById('mMarca').textContent = p.marca || '';
+        document.getElementById('mMarca2').textContent = p.marca || 'N/A';
+        document.getElementById('mPrecio').textContent = '$' + p.precio.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('mFotos').textContent = (p.imagenes.length || 0);
+        document.getElementById('mDescripcion').textContent = p.descripcion || 'Sin descripcion.';
 
-        function cerrarModal() {
-            document.getElementById('modalOverlay').classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') cerrarModal();
-        });
-
-        /* Animacion sutil de aparicion al hacer scroll por los productos */
-        (function() {
-            var cards = document.querySelectorAll('.catalogo-card');
-            if (!('IntersectionObserver' in window) || !cards.length) {
-                cards.forEach(function(c) { c.classList.add('visible'); });
-                return;
-            }
-            cards.forEach(function(c, i) {
-                c.style.setProperty('--delay', Math.min(i % 6 * 60, 300) + 'ms');
+        var thumbs = document.getElementById('mThumbs');
+        thumbs.innerHTML = '';
+        if (p.imagenes.length === 0) {
+            document.getElementById('mImagen').style.display = 'none';
+            document.getElementById('mPlaceholder').style.display = '';
+        } else {
+            document.getElementById('mPlaceholder').style.display = 'none';
+            setImagenPrincipal(p.imagenes[0], 0);
+            p.imagenes.forEach(function(imgId, i) {
+                var t = document.createElement('img');
+                t.src = '{{ url_for("public.catalogo") }}/imagen/' + imgId;
+                t.className = 'modal-thumb';
+                t.alt = 'Foto ' + (i + 1);
+                t.dataset.idx = i;
+                t.onclick = function() { setImagenPrincipal(imgId, i); };
+                thumbs.appendChild(t);
             });
-            var io = new IntersectionObserver(function(entries) {
-                entries.forEach(function(e) {
-                    if (e.isIntersecting) {
-                        e.target.classList.add('visible');
-                        io.unobserve(e.target);
-                    }
-                });
-            }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
-            cards.forEach(function(c) { io.observe(c); });
-        })();
-    </script>
+        }
+        document.getElementById('modalOverlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
 
-    <a class="whatsapp-float" href="https://wa.me/573013992470?text=Hola%2C%20estoy%20interesado%20en%20sus%20productos" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
-        <i class="fab fa-whatsapp"></i> Escríbenos
-    </a>
-</body>
-</html>
+    function setImagenPrincipal(imgId, idx) {
+        var img = document.getElementById('mImagen');
+        img.style.display = '';
+        img.src = '{{ url_for("public.catalogo") }}/imagen/' + imgId;
+        img.onclick = function() { window.open(this.src, '_blank'); };
+        var ts = document.querySelectorAll('.modal-thumb');
+        ts.forEach(function(t) { t.classList.toggle('active', parseInt(t.dataset.idx) === idx); });
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') cerrarModal();
+    });
+
+    /* Animacion sutil de aparicion al hacer scroll por los productos */
+    (function() {
+        var cards = document.querySelectorAll('.catalogo-card');
+        if (!('IntersectionObserver' in window) || !cards.length) {
+            cards.forEach(function(c) { c.classList.add('visible'); });
+            return;
+        }
+        cards.forEach(function(c, i) {
+            c.style.setProperty('--delay', Math.min(i % 6 * 60, 300) + 'ms');
+        });
+        var io = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    io.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+        cards.forEach(function(c) { io.observe(c); });
+    })();
+</script>
+{% endblock %}

@@ -3,7 +3,7 @@ import secrets
 from flask import Flask, redirect, url_for, session, render_template, send_from_directory, request, g
 from flask_wtf.csrf import CSRFProtect
 from config import Config
-from database.db import init_db, seed_admin, get_db
+from database.db import init_db, seed_admin, seed_empresa, get_db
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -96,13 +96,21 @@ def currency_filter(value):
 
 @app.context_processor
 def inject_user():
+    from datetime import datetime
     ctx = {
+        'anio_actual': datetime.now().year,
         'current_user': {
             'id': session.get('user_id'),
             'nombre': session.get('nombre'),
             'rol': session.get('rol')
         } if 'user_id' in session else None
     }
+    if 'empresa_data' in g:
+        ctx['empresa'] = g.empresa_data
+    else:
+        from database.db import get_empresa
+        g.empresa_data = get_empresa()
+        ctx['empresa'] = g.empresa_data
     if session.get('rol') == 'ADMIN':
         try:
             db = get_db()
@@ -140,6 +148,7 @@ def ensure_db():
         try:
             init_db()
             seed_admin()
+            seed_empresa()
             _db_initialized = True
         except Exception as e:
             import traceback

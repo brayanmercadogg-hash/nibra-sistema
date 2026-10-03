@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ empresa.nombre if empresa else 'NIBRA' }}{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo/logo.jpg') }}" type="image/jpeg">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo/logo.jpg') }}">
+    {% block meta %}{% endblock %}
+    <meta property="og:site_name" content="{{ empresa.nombre if empresa else 'NIBRA' }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ empresa.descripcion if empresa and empresa.descripcion else 'Productos de belleza, maquillaje, cuidado capilar y skincare.' }}{% endblock %}">
+    <meta property="og:image" content="{{ url_for('static', filename='img/logo/logo.jpg', _external=True) }}">
+    <meta property="og:image:alt" content="Logo de {{ empresa.nombre if empresa else 'NIBRA' }}">
+    <meta property="og:locale" content="es_ES">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block tw_title %}{{ self.title() }}{% endblock %}">
+    <meta name="twitter:description" content="{% block tw_description %}{{ self.og_description() }}{% endblock %}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/logo/logo.jpg', _external=True) }}">
+    {% block head_extra %}{% endblock %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/publico.css') }}">
+    {% block styles %}{% endblock %}
+</head>
+<body>
+{% set wa = (empresa.whatsapp if empresa and empresa.whatsapp else '573013992470')|replace(' ', '')|replace('+', '') %}
+<nav class="nibra-nav">
+    <div class="nibra-nav-inner">
+        <a href="{{ url_for('public.inicio') }}" class="nibra-nav-logo">
+            <img src="{{ url_for('static', filename='img/logo/logo.jpg') }}" alt="Logo {{ empresa.nombre if empresa else 'NIBRA' }}">
+            <span>{{ empresa.nombre if empresa and empresa.nombre else 'NIBRA' }}</span>
+        </a>
+        <ul class="nibra-nav-links" id="navLinks">
+            <li><a href="{{ url_for('public.inicio') }}" class="{% if request.endpoint in ('public.inicio', 'main.dashboard') and not current_user %}activo{% endif %}">Inicio</a></li>
+            <li><a href="{{ url_for('public.empresa') }}" class="{% if request.endpoint == 'public.empresa' %}activo{% endif %}">Empresa</a></li>
+            <li><a href="{{ url_for('public.catalogo') }}" class="{% if request.endpoint == 'public.catalogo' %}activo{% endif %}">Catalogo</a></li>
+            <li><a href="https://wa.me/{{ wa }}" class="nibra-nav-cta" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Escríbenos</a></li>
+        </ul>
+        <button class="nibra-nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+</nav>
+
+{% with msgs = get_flashed_messages(with_categories=true) %}
+{% if msgs %}
+<div class="publico-flash">
+    {% for category, message in msgs %}
+    <div class="flash-msg flash-{{ category }}">
+        <i class="fas {% if category == 'success' %}fa-circle-check{% elif category == 'danger' %}fa-circle-exclamation{% else %}fa-triangle-exclamation{% endif %}"></i>
+        <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<main class="publico-main">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="nibra-footer">
+    <div class="nibra-footer-inner">
+        <div>
+            <div class="nibra-footer-brand">
+                <img src="{{ url_for('static', filename='img/logo/logo.jpg') }}" alt="Logo {{ empresa.nombre if empresa else 'NIBRA' }}">
+                <strong>{{ empresa.nombre if empresa and empresa.nombre else 'NIBRA' }}</strong>
+            </div>
+            <p>{{ empresa.descripcion if empresa and empresa.descripcion else 'Distribuidora de productos de belleza y cuidado personal.' }}</p>
+            {% if empresa and (empresa.instagram or empresa.facebook) %}
+            <p style="margin-top:1rem">
+                {% if empresa.instagram %}<a href="{{ empresa.instagram }}" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Instagram</a>{% endif %}
+                {% if empresa.instagram and empresa.facebook %} &nbsp;·&nbsp; {% endif %}
+                {% if empresa.facebook %}<a href="{{ empresa.facebook }}" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i> Facebook</a>{% endif %}
+            </p>
+            {% endif %}
+        </div>
+        <div>
+            <h4>Navegacion</h4>
+            <ul>
+                <li><a href="{{ url_for('public.inicio') }}">Inicio</a></li>
+                <li><a href="{{ url_for('public.empresa') }}">Empresa</a></li>
+                <li><a href="{{ url_for('public.catalogo') }}">Catalogo de productos</a></li>
+                <li><a href="{{ url_for('public.empresa') }}#contacto">Contacto</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Contacto</h4>
+            <ul class="nibra-footer-contacto">
+                {% if empresa and empresa.whatsapp %}
+                <li><i class="fab fa-whatsapp"></i><a href="https://wa.me/{{ wa }}" target="_blank" rel="noopener">{{ empresa.telefono or wa }}</a></li>
+                {% endif %}
+                {% if empresa and empresa.email %}
+                <li><i class="fas fa-envelope"></i><a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a></li>
+                {% endif %}
+                {% if empresa and empresa.direccion %}
+                <li><i class="fas fa-map-marker-alt"></i><span>{{ empresa.direccion }}{% if empresa.ciudad %}, {{ empresa.ciudad }}{% endif %}</span></li>
+                {% endif %}
+                {% if empresa and empresa.horarios %}
+                <li><i class="fas fa-clock"></i><span>{{ empresa.horarios }}</span></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    <div class="nibra-footer-bottom">
+        <span class="footer-logo">{{ empresa.nombre if empresa and empresa.nombre else 'NIBRA' }}</span>
+        <span>&copy; {{ anio_actual }}{% if empresa and empresa.razon_social and empresa.razon_social != empresa.nombre %} {{ empresa.razon_social }}.{% endif %} Todos los derechos reservados.</span>
+    </div>
+</footer>
+
+<a class="whatsapp-float" href="https://wa.me/{{ wa }}?text=Hola%2C%20estoy%20interesado%20en%20sus%20productos" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+    <i class="fab fa-whatsapp"></i> <span>Escríbenos</span>
+</a>
+
+<script>
+    (function () {
+        var btn = document.getElementById('navToggle');
+        var links = document.getElementById('navLinks');
+        if (!btn || !links) return;
+        btn.addEventListener('click', function () {
+            var abierto = links.classList.toggle('abierto');
+            btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+            btn.innerHTML = abierto ? '<i class="fas fa-xmark"></i>' : '<i class="fas fa-bars"></i>';
+        });
+    })();
+
+    /* Animacion sutil de aparicion al hacer scroll */
+    (function () {
+        var items = document.querySelectorAll('.reveal');
+        if (!items.length) return;
+        if (!('IntersectionObserver' in window)) {
+            items.forEach(function (el) { el.classList.add('visible'); });
+            return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    io.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.06, rootMargin: '0px 0px -6% 0px' });
+        items.forEach(function (el) { io.observe(el); });
+    })();
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
